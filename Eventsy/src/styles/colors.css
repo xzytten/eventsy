@@ -1,0 +1,25 @@
+/* put here colors for  */
+@theme {
+    --color-text-milk: #EEE6D8;
+    /* text milk*/
+    --color-minor-text: #A8A8A8;
+    /* like secondary text*/
+    --color-mainbg: #181820;
+    /* main background color*/
+    --color-mainbg-90: rgba(24, 24, 32, 0.9);
+    /*shoud be 80%*/
+    --color-coral: #EC707A;
+    /*main coral color*/
+    --color-error: #D44F56;
+    /* color for errors*/
+    --color-text-dark: #333333;
+    /* color fox dark text*/
+    --color-text-transperent: #A8A8A8;
+    /*color with "opacity" */
+    --сolor-bg-dark: #37393D;
+    --color-bg-dark-60: rgba(55, 57, 61, 0.6);
+    --color-coral-hover: #c9636b;
+    --color-blue-gray: #4C6B89;
+    --color-black-30: rgba(0, 0, 0, 0.3);
+
+}

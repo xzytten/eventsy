@@ -1,0 +1,32 @@
+body {
+    background-color: hsla(241, 55%, 43%, 1);
+    background-image:
+        radial-gradient(at 28% 19%, hsla(266, 58%, 47%, 1) 0px, transparent 50%),
+        radial-gradient(at 50% 35%, hsla(246, 58%, 48%, 1) 0px, transparent 50%),
+        radial-gradient(at 45% 58%, hsla(245, 57%, 48%, 1) 0px, transparent 50%),
+        radial-gradient(at 14% 80%, hsla(240, 68%, 35%, 0.77) 0px, transparent 50%),
+        radial-gradient(at 22% 11%, hsla(226, 63%, 53%, 0.48) 0px, transparent 50%),
+        radial-gradient(at 5% 10%, hsla(263, 100%, 17%, 1) 0px, transparent 50%),
+        radial-gradient(at 97% 49%, hsla(360, 0%, 0%, 1) 0px, transparent 50%),
+        radial-gradient(at 99% 89%, hsla(250, 20%, 0%, 1) 0px, transparent 50%),
+        radial-gradient(at 70% 0%, hsla(255, 0%, 0%, 1) 0px, transparent 50%),
+        radial-gradient(at 71% 98%, hsla(263, 100%, 0%, 1) 0px, transparent 50%),
+        radial-gradient(at 95% 20%, hsla(266, 89%, 0%, 1) 0px, transparent 50%);
+    background-blend-mode: lighten, lighten, lighten, normal;
+    background-size: cover;
+    background-repeat: no-repeat;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    margin: 0;
+}
+
+#tsparticles {
+    position: fixed !important;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}

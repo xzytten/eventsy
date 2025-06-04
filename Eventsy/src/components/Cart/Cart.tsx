@@ -1,6 +1,10 @@
 import { type FC } from 'react';
-import { X, Plus, Minus, Trash2 } from 'lucide-react';
-import { useCart } from '@/hooks/useCart';
+import { X } from 'lucide-react';
+import { useCartStore } from '@/store/cartStore';
+import useFoodStore from '@/store/foodStore';
+import CartItemComponent from './CartItemComponent';
+import { type CartItem as CartItemType } from '@/types/cart';
+import { type ServiceCategory } from '@/types/services';
 
 interface CartProps {
     isOpen: boolean;
@@ -8,7 +12,18 @@ interface CartProps {
 }
 
 const Cart: FC<CartProps> = ({ isOpen, onClose }) => {
-    const { cartItems, updateQuantity, removeFromCart, getTotalPrice } = useCart();
+    const { items: cartItems, removeFromCart, getTotalPrice, updateQuantity, toggleCartItem } = useCartStore();
+    const { updateFoodDescription } = useFoodStore();
+
+    const handleUpdateClientDescription = (id: string, description: string, category: ServiceCategory) => {
+        switch (category) {
+            case 'food':
+                updateFoodDescription(id, description);
+                break;
+            default:
+                console.warn(`No specific description update function for category: ${category}`);
+        }
+    };
 
     if (!isOpen) return null;
 
@@ -32,45 +47,14 @@ const Cart: FC<CartProps> = ({ isOpen, onClose }) => {
                                 Кошик порожній
                             </div>
                         ) : (
-                            cartItems.map((item) => (
-                                <div
+                            cartItems.map((item: CartItemType) => (
+                                <CartItemComponent
                                     key={item.id}
-                                    className="bg-black-40 rounded-lg p-6 space-y-4"
-                                >
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <h3 className="text-lg font-medium">{item.title}</h3>
-                                            <p className="text-muted mt-1">{item.duration}</p>
-                                        </div>
-                                        <button
-                                            onClick={() => removeFromCart(item.id)}
-                                            className="p-2 hover:bg-white/5 rounded-lg transition-colors"
-                                        >
-                                            <Trash2 size={20} className="text-red-500" />
-                                        </button>
-                                    </div>
-
-                                    <div className="flex justify-between items-center">
-                                        <div className="flex items-center gap-3">
-                                            <button
-                                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                                className="p-2 hover:bg-white/5 rounded-lg transition-colors"
-                                            >
-                                                <Minus size={20} />
-                                            </button>
-                                            <span className="text-lg">{item.quantity}</span>
-                                            <button
-                                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                                className="p-2 hover:bg-white/5 rounded-lg transition-colors"
-                                            >
-                                                <Plus size={20} />
-                                            </button>
-                                        </div>
-                                        <span className="text-xl font-medium text-coral">
-                                            {item.price * item.quantity} ₴
-                                        </span>
-                                    </div>
-                                </div>
+                                    item={item}
+                                    onRemove={() => removeFromCart(item.id)}
+                                    onUpdateClientDescription={(desc: string) => handleUpdateClientDescription(item.id, desc, item.category)}
+                                    onUpdateQuantity={(id: string, quantity: number) => updateQuantity(id, quantity)}
+                                />
                             ))
                         )}
                     </div>

@@ -3,16 +3,18 @@ import MainLayout from '@/layouts/MainLayout';
 import { AuthLayout } from '@/layouts/AuthLayout';
 import LoginPage from '@/pages/auth/LoginPage';
 import RegisterPage from '@/pages/auth/RegisterPage';
-import HomePage from '@/pages/HomePage';
-import NotFound from '@/pages/NotFound';
+import HomePage from '@/pages/Home/HomePage';
+import NotFound from '@/pages/NotFound/NotFound';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
-import PortfolioPage from '@/pages/PortfolioPage';
-import AboutPage from '@/pages/AboutPage';
-import ServicesPage from '@/pages/ServicesPage';
-import ChatPage from '@/pages/ChatPage';
-import CabinetPage from '@/pages/CabinetPage';
-import OrdersHistoryPage from '@/pages/OrdersHistoryPage';
-import CartPage from '@/pages/CartPage';
+import PortfolioPage from '@/pages/Portfolio/PortfolioPage';
+import AboutPage from '@/pages/About/AboutPage';
+import ServicesPage from '@/pages/Services/ServicesPage';
+import ChatPage from '@/pages/Chat/ChatPage';
+import CabinetPage from '@/pages/Cabinet/CabinetPage';
+import OrdersHistoryPage from '@/pages/OrdersHistory/OrdersHistoryPage';
+import CartPage from '@/pages/Cart/CartPage';
+import OrderSuccessPage from '@/pages/OrderSuccess/OrderSuccessPage';
+import StepOrderPage from '@/pages/StepOrder/StepOrderPage';
 import PageLayout from '@/layouts/PageLayout';
 
 export const router = createBrowserRouter([
@@ -48,6 +50,10 @@ export const router = createBrowserRouter([
                         element: <ServicesPage />
                     },
                     {
+                        path: 'step-order',
+                        element: <StepOrderPage />
+                    },
+                    {
                         path: 'chat',
                         element: (
                             <ProtectedRoute>
@@ -73,9 +79,13 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: 'cart',
+                        element: <CartPage />
+                    },
+                    {
+                        path: 'order-success',
                         element: (
                             <ProtectedRoute>
-                                <CartPage />
+                                <OrderSuccessPage />
                             </ProtectedRoute>
                         )
                     }

@@ -1,24 +1,20 @@
 import type { FC } from 'react';
 import { useUserStore } from '@/store/userStore';
-import NavItem from '../NavItem/NavItem';
 import {
     Image,
     Users,
     Settings,
     MessageCircle,
     UserCircle,
-    LogOut,
-    LogIn
+    ShoppingCart,
+    ListOrdered
 } from 'lucide-react';
-import OutlinedButton from '../OutlinedButton/OutlinedButton';
 import { useLocation, useNavigate } from 'react-router-dom';
 import NavOutlinedButton from '../NavOutlinedButton/NavOutlinedButton';
 
 const Header: FC = () => {
     const { isAuthenticated } = useUserStore();
     const location = useLocation();
-    const isLoginPage = location.pathname === '/auth/login';
-    const navigate = useNavigate();
     return (
         <header >
             <nav className="container mx-auto px-4 py-4">
@@ -35,8 +31,15 @@ const Header: FC = () => {
                         <NavOutlinedButton to="/services" icon={<Settings size={18} />}>
                             Послуги
                         </NavOutlinedButton>
+
+                        <NavOutlinedButton to="/step-order" icon={<ListOrdered size={18} />}>
+                            Оформити замовлення
+                        </NavOutlinedButton>
                     </div>
                     <div className="flex items-center space-x-4 text-text-milk text-lg">
+                        <NavOutlinedButton to="/cart" icon={<ShoppingCart size={18} />}>
+                            Кошик
+                        </NavOutlinedButton>
                         {isAuthenticated ? (
                             <>
                                 <NavOutlinedButton to="/chat" icon={<MessageCircle size={18} />}>

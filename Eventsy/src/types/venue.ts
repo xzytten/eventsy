@@ -20,4 +20,6 @@ export interface IVenue {
   updatedAt?: Date;
   images?: string[];
   clientDescription?: string;
+  paymentType?: 'full' | 'hourly';
+  hours?: number;
 } 

@@ -1,18 +1,23 @@
 import { create } from 'zustand';
-import { type IVenue } from '@/types/venue';
+import { persist } from 'zustand/middleware';
+import type { IVenue } from '@/types/venue';
 import { venueService } from '@/services/venueService';
+import { type CartItem } from '@/types/cart';
 
 interface VenueState {
     venues: IVenue[];
     isLoading: boolean;
+    isLoaded: boolean;
     error: string | null;
     selectedVenues: IVenue[];
     loadVenues: () => Promise<void>;
-    selectVenue: (venue: IVenue) => void;
-    removeVenue: (venueId: string) => void;
-    clearSelectedVenues: () => void;
     toggleSelectedVenue: (venue: IVenue) => void;
-    updateVenueDescription: (venueId: string, description: string) => void;
+    updateVenueDescription: (id: string, description: string) => void;
+    updateVenuePaymentType: (id: string, paymentType: 'full' | 'hourly') => void;
+    updateVenueHours: (id: string, hours: number) => void;
+    removeVenue: (id: string) => void;
+    clearSelectedVenues: () => void;
+    selectVenue: (venue: IVenue) => void;
 }
 
 const localStorageKey = 'venue-storage';
@@ -28,79 +33,102 @@ const loadSelectedVenues = (): IVenue[] => {
     return savedVenues ? JSON.parse(savedVenues) : [];
 };
 
-export const useVenueStore = create<VenueState>((set, get) => ({
-    venues: [],
-    isLoading: false,
-    error: null,
-    selectedVenues: loadSelectedVenues(),
+const useVenueStore = create<VenueState>()(
+    persist(
+        (set, get) => ({
+            venues: [],
+            isLoading: false,
+            isLoaded: false,
+            error: null,
+            selectedVenues: [],
 
-    loadVenues: async () => {
-        const { venues, isLoading } = get();
-        // If already loading or data exists, do nothing
-        if (isLoading || venues.length > 0) {
-            return;
+            loadVenues: async () => {
+                if (get().isLoading) return;
+
+                set({ isLoading: true, error: null });
+                try {
+                    const response = await venueService.getAll();
+                    set({
+                        venues: response,
+                        isLoading: false,
+                        isLoaded: true
+                    });
+                } catch (error) {
+                    set({
+                        error: 'Помилка завантаження локацій',
+                        isLoading: false,
+                        isLoaded: false
+                    });
+                }
+            },
+
+            toggleSelectedVenue: (venue: IVenue) => {
+                const { selectedVenues } = get();
+                const isSelected = selectedVenues.some(v => v._id === venue._id);
+
+                if (isSelected) {
+                    const updatedVenues = selectedVenues.filter(v => v._id !== venue._id);
+                    set({ selectedVenues: updatedVenues });
+                } else {
+                    const updatedVenues = [...selectedVenues, venue];
+                    set({ selectedVenues: updatedVenues });
+                }
+            },
+
+            updateVenueDescription: (id: string, description: string) => {
+                const { selectedVenues } = get();
+                const updatedVenues = selectedVenues.map(venue =>
+                    venue._id === id
+                        ? { ...venue, clientDescription: description }
+                        : venue
+                );
+                set({ selectedVenues: updatedVenues });
+            },
+
+            updateVenuePaymentType: (id: string, paymentType: 'full' | 'hourly') => {
+                const { selectedVenues } = get();
+                const updatedVenues = selectedVenues.map(venue =>
+                    venue._id === id
+                        ? { ...venue, paymentType }
+                        : venue
+                );
+                set({ selectedVenues: updatedVenues });
+            },
+
+            updateVenueHours: (id: string, hours: number) => {
+                const { selectedVenues } = get();
+                const updatedVenues = selectedVenues.map(venue =>
+                    venue._id === id
+                        ? { ...venue, hours }
+                        : venue
+                );
+                set({ selectedVenues: updatedVenues });
+            },
+
+            removeVenue: (id: string) => {
+                console.log('Store: Removing venue with ID:', id);
+                const { selectedVenues } = get();
+                console.log('Current selected venues:', selectedVenues);
+                const updatedVenues = selectedVenues.filter(venue => venue._id !== id);
+                console.log('Updated venues after removal:', updatedVenues);
+                set({ selectedVenues: updatedVenues });
+            },
+
+            clearSelectedVenues: () => {
+                set({ selectedVenues: [] });
+            },
+
+            selectVenue: (venue: IVenue) => {
+                set({ selectedVenues: [venue] });
+            }
+        }),
+        {
+            name: 'venue-storage',
+            partialize: (state) => ({
+                selectedVenues: state.selectedVenues
+            })
         }
+    )
+);
 
-        set({ isLoading: true, error: null });
-        try {
-            const venuesData = await venueService.getAll();
-            set({ venues: venuesData, isLoading: false });
-        } catch (error) {
-            set({ 
-                error: 'Помилка завантаження локацій', 
-                isLoading: false 
-            });
-            console.error('Помилка завантаження локацій:', error);
-        }
-    },
-
-    selectVenue: (venue) => {
-        const selectedVenues = get().selectedVenues;
-        // Allow only one venue to be selected
-        if (selectedVenues.some(v => v._id === venue._id)) {
-             // If already selected, do nothing (or could toggle off)
-             return;
-        }
-        const newSelectedVenues = [venue]; // Select only the new one
-        set({ selectedVenues: newSelectedVenues });
-        saveSelectedVenues(newSelectedVenues);
-    },
-
-    removeVenue: (venueId) => {
-        const selectedVenues = get().selectedVenues;
-        const newSelectedVenues = selectedVenues.filter(v => v._id !== venueId);
-        set({ selectedVenues: newSelectedVenues });
-        saveSelectedVenues(newSelectedVenues);
-    },
-
-    clearSelectedVenues: () => {
-        set({ selectedVenues: [] });
-        saveSelectedVenues([]);
-    },
-
-    toggleSelectedVenue: (venue) => {
-        const selectedVenues = get().selectedVenues;
-        const isSelected = selectedVenues.some(v => v._id === venue._id);
-        
-        if (isSelected) {
-            const newSelectedVenues = selectedVenues.filter(v => v._id !== venue._id);
-            set({ selectedVenues: newSelectedVenues });
-            saveSelectedVenues(newSelectedVenues);
-        } else {
-            const newSelectedVenues = [venue]; // Select only the new one
-            set({ selectedVenues: newSelectedVenues });
-            saveSelectedVenues(newSelectedVenues);
-        }
-    },
-
-    updateVenueDescription: (venueId, description) => {
-        const selectedVenues = get().selectedVenues;
-        const updatedVenues = selectedVenues.map(venue => 
-            venue._id === venueId 
-                ? { ...venue, clientDescription: description }
-                : venue
-        );
-        set({ selectedVenues: updatedVenues });
-        saveSelectedVenues(updatedVenues);
-    }
-})); 
+export { useVenueStore }; 

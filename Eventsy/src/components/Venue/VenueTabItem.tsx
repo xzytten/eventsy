@@ -3,6 +3,7 @@ import { motion, useInView } from 'framer-motion';
 import { Plus, Minus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { type CartItem } from '@/types/cart';
 import { type IVenue } from '@/types/venue';
+import { useVenueStore } from '@/store/venueStore';
 
 interface CartItemComponentProps {
     item: CartItem;
@@ -53,16 +54,70 @@ const VenueTabItem: FC<CartItemComponentProps> = ({
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: "100px" });
     const [openDescriptionId, setOpenDescriptionId] = useState<string | null>(null);
-    const [editingClientDescription, setEditingClientDescription] = useState<string>('');
+    const updateVenueDescription = useVenueStore(state => state.updateVenueDescription);
+    const updateVenuePaymentType = useVenueStore(state => state.updateVenuePaymentType);
+    const updateVenueHours = useVenueStore(state => state.updateVenueHours);
+    const removeVenue = useVenueStore(state => state.removeVenue);
+    const selectedVenues = useVenueStore(state => state.selectedVenues);
+    const currentVenue = selectedVenues.find(v => v._id === item.id);
+    const [editingClientDescription, setEditingClientDescription] = useState<{ id: string | null, value: string, isFocused: boolean }>({
+        id: null,
+        value: item.clientDescription || '',
+        isFocused: false
+    });
 
     useEffect(() => {
-        if (item.clientDescription) {
-            setEditingClientDescription(item.clientDescription);
-        }
+        setEditingClientDescription(prev => ({
+            ...prev,
+            value: item.clientDescription || ''
+        }));
     }, [item.clientDescription]);
+
+    const handleRemove = () => {
+        console.log('Removing venue:', { itemId: item.id });
+        if (item.id) {
+            removeVenue(item.id);
+            if (onRemove) {
+                onRemove();
+            }
+        }
+    };
+
+    const handlePaymentTypeChange = (paymentType: 'full' | 'hourly') => {
+        console.log('Payment type change:', { id: item.id, paymentType, currentVenue });
+        if (item.id) {
+            updateVenuePaymentType(item.id, paymentType);
+            if (onUpdatePaymentType) {
+                onUpdatePaymentType(paymentType);
+            }
+        }
+    };
+
+    const handleHoursChange = (hours: number) => {
+        console.log('Hours change:', { id: item.id, hours, currentVenue });
+        if (item.id) {
+            updateVenueHours(item.id, hours);
+            if (onUpdateQuantity) {
+                onUpdateQuantity(item.id, hours);
+            }
+        }
+    };
 
     const imageUrl = fullDetails && 'images' in fullDetails && fullDetails.images?.[0] || item.image || '/placeholder-service.jpg';
     const itemTitle = fullDetails && 'name' in fullDetails ? fullDetails.name : item.title;
+
+    // Get current payment type and hours
+    const currentPaymentType = currentVenue?.paymentType || (currentVenue?.pricePerHour ? 'hourly' : 'full');
+    const currentHours = currentVenue?.hours || 1;
+
+    console.log('Current venue state:', {
+        id: item.id,
+        currentVenue,
+        paymentType: currentPaymentType,
+        hours: currentHours,
+        pricePerHour: currentVenue?.pricePerHour,
+        pricePerDay: currentVenue?.pricePerDay
+    });
 
     return (
         <motion.div
@@ -95,8 +150,10 @@ const VenueTabItem: FC<CartItemComponentProps> = ({
                         onClick={() => {
                             if (openDescriptionId === item.id) {
                                 setOpenDescriptionId(null);
+                                setEditingClientDescription({ id: null, value: '', isFocused: false });
                             } else {
                                 setOpenDescriptionId(item.id);
+                                setEditingClientDescription({ id: item.id, value: item.clientDescription || '', isFocused: false });
                             }
                         }}
                         className="mt-2 px-3 py-1 bg-black-30 text-muted text-sm rounded-md hover:bg-white/10 transition-colors flex items-center gap-1 cursor-pointer"
@@ -105,7 +162,7 @@ const VenueTabItem: FC<CartItemComponentProps> = ({
                     </button>
                 </div>
                 <button
-                    onClick={onRemove}
+                    onClick={handleRemove}
                     className="p-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
                 >
                     <Trash2 size={20} className="text-red-500" />
@@ -119,15 +176,21 @@ const VenueTabItem: FC<CartItemComponentProps> = ({
                             className="w-full p-3 rounded-lg bg-black-30 text-white placeholder-muted resize-none pr-24"
                             rows={3}
                             placeholder="Додати опис до замовлення (необов'язково)"
-                            value={editingClientDescription}
-                            onChange={(e) => setEditingClientDescription(e.target.value)}
-                            onBlur={() => {
-                                if (onUpdateClientDescription) {
-                                    onUpdateClientDescription(editingClientDescription);
+                            value={editingClientDescription.id === item.id ? editingClientDescription.value : item.clientDescription || ''}
+                            onChange={(e) => setEditingClientDescription({ id: item.id, value: e.target.value, isFocused: editingClientDescription.isFocused })}
+                            onFocus={() => setEditingClientDescription(prev => ({ ...prev, isFocused: true }))}
+                            onBlur={(e) => {
+                                const description = e.target.value;
+                                if (item.id) {
+                                    updateVenueDescription(item.id, description);
+                                    if (onUpdateClientDescription) {
+                                        onUpdateClientDescription(description);
+                                    }
                                 }
+                                setEditingClientDescription(prev => ({ ...prev, isFocused: false }));
                             }}
                         ></textarea>
-                        <div className="absolute bottom-2 right-2 flex items-center gap-1.5 text-xs text-muted/70">
+                        <div className={`absolute bottom-2 right-2 flex items-center gap-1.5 text-xs text-muted/70 transition-opacity duration-200 ${editingClientDescription.isFocused ? 'opacity-100' : 'opacity-0'}`}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <circle cx="12" cy="12" r="10" />
                                 <line x1="12" y1="16" x2="12" y2="12" />
@@ -138,48 +201,74 @@ const VenueTabItem: FC<CartItemComponentProps> = ({
                     </div>
                 )}
 
-                <div className="flex gap-4">
-                    <button
-                        onClick={() => onUpdatePaymentType?.('full')}
-                        className={`flex-1 py-2 px-4 rounded-lg transition-colors cursor-pointer ${item.paymentType === 'full'
-                                ? 'bg-coral text-white'
-                                : 'bg-black-30 text-muted hover:bg-white/5'
-                            }`}
-                    >
-                        На весь день
-                    </button>
-                    <button
-                        onClick={() => onUpdatePaymentType?.('hourly')}
-                        className={`flex-1 py-2 px-4 rounded-lg transition-colors cursor-pointer ${item.paymentType === 'hourly'
-                                ? 'bg-coral text-white'
-                                : 'bg-black-30 text-muted hover:bg-white/5'
-                            }`}
-                    >
-                        Погодинно
-                    </button>
-                </div>
+                {currentVenue && (
+                    <>
+                        {currentVenue.pricePerHour && currentVenue.pricePerDay ? (
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => handlePaymentTypeChange('full')}
+                                    className={`flex-1 py-2 px-4 rounded-lg transition-colors cursor-pointer ${
+                                        currentPaymentType === 'full'
+                                            ? 'bg-coral text-white'
+                                            : 'bg-black-30 text-muted hover:bg-white/5'
+                                    }`}
+                                >
+                                    На весь день
+                                </button>
+                                <button
+                                    onClick={() => handlePaymentTypeChange('hourly')}
+                                    className={`flex-1 py-2 px-4 rounded-lg transition-colors cursor-pointer ${
+                                        currentPaymentType === 'hourly'
+                                            ? 'bg-coral text-white'
+                                            : 'bg-black-30 text-muted hover:bg-white/5'
+                                    }`}
+                                >
+                                    Погодинно
+                                </button>
+                            </div>
+                        ) : currentVenue.pricePerHour ? (
+                            <div className="text-muted mb-2">Оплата погодинно</div>
+                        ) : (
+                            <div className="text-muted mb-2">Оплата за весь день</div>
+                        )}
+                    </>
+                )}
 
-                {item.paymentType === 'hourly' && (
+                {currentPaymentType === 'hourly' && currentVenue?.pricePerHour && (
                     <div className="flex items-center gap-4">
                         <span className="text-muted">Кількість годин:</span>
                         <div className="flex items-center gap-3">
                             <button
-                                onClick={() => onUpdateQuantity?.(item.id, (item.quantity || 1) - 1)}
-                                disabled={(item.quantity || 1) <= 1}
+                                onClick={() => handleHoursChange(currentHours - 1)}
+                                disabled={currentHours <= 1}
                                 className="p-2 hover:bg-white/5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                             >
                                 <Minus size={20} />
                             </button>
-                            <span className="text-lg">{item.quantity || 1}</span>
+                            <input
+                                type="number"
+                                min="1"
+                                max="24"
+                                value={currentHours}
+                                onChange={(e) => {
+                                    const value = parseInt(e.target.value);
+                                    if (!isNaN(value) && value >= 1 && value <= 24) {
+                                        handleHoursChange(value);
+                                    }
+                                }}
+                                className="w-16 text-center bg-black-30 border border-white/10 rounded-lg px-2 py-1 text-lg focus:outline-none focus:border-coral transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            />
                             <button
-                                onClick={() => onUpdateQuantity?.(item.id, (item.quantity || 1) + 1)}
-                                className="p-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+                                onClick={() => handleHoursChange(currentHours + 1)}
+                                disabled={currentHours >= 24}
+                                className="p-2 hover:bg-white/5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                             >
                                 <Plus size={20} />
                             </button>
                         </div>
                     </div>
                 )}
+
                 <div className="mt-4">
                     <button
                         onClick={() => onDetailsClick(item, fullDetails)}
@@ -192,9 +281,9 @@ const VenueTabItem: FC<CartItemComponentProps> = ({
 
             <div className="flex justify-end">
                 <span className="text-xl font-medium text-coral">
-                    {item.paymentType === 'hourly' && item.hours && item.hourlyPrice
-                        ? `${(item.hourlyPrice) * (item.hours)} ₴`
-                        : `${item.price} ₴`}
+                    {currentPaymentType === 'hourly' && currentVenue?.pricePerHour
+                        ? `${(currentVenue.pricePerHour) * currentHours} ₴`
+                        : `${currentVenue?.pricePerDay || 0} ₴`}
                 </span>
             </div>
         </motion.div>

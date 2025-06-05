@@ -13,6 +13,9 @@ interface VehicleState {
   loadVehicles: () => Promise<void>;
   toggleSelectedVehicle: (vehicle: IVehicle) => void;
   updateVehicleDescription: (id: string, description: string) => void;
+  updateVehiclePaymentType: (id: string, paymentType: 'full' | 'hourly') => void;
+  updateVehicleHours: (id: string, hours: number) => void;
+  removeVehicle: (id: string) => void;
   clearSelectedVehicles: () => void;
 }
 
@@ -99,6 +102,39 @@ const useVehicleStore = create<VehicleState>()(
               : vehicle
           )
         });
+      },
+
+      updateVehiclePaymentType: (id: string, paymentType: 'full' | 'hourly') => {
+        console.log('Store: Updating payment type:', { id, paymentType });
+        const { selectedVehicles } = get();
+        const updatedVehicles = selectedVehicles.map(vehicle =>
+          vehicle._id === id
+            ? { ...vehicle, paymentType }
+            : vehicle
+        );
+        console.log('Store: Updated vehicles:', updatedVehicles);
+        set({ selectedVehicles: updatedVehicles });
+        saveSelectedVehicles(updatedVehicles);
+      },
+
+      updateVehicleHours: (id: string, hours: number) => {
+        console.log('Store: Updating hours:', { id, hours });
+        const { selectedVehicles } = get();
+        const updatedVehicles = selectedVehicles.map(vehicle =>
+          vehicle._id === id
+            ? { ...vehicle, hours }
+            : vehicle
+        );
+        console.log('Store: Updated vehicles:', updatedVehicles);
+        set({ selectedVehicles: updatedVehicles });
+        saveSelectedVehicles(updatedVehicles);
+      },
+
+      removeVehicle: (id: string) => {
+        const { selectedVehicles } = get();
+        const updatedVehicles = selectedVehicles.filter(vehicle => vehicle._id !== id);
+        set({ selectedVehicles: updatedVehicles });
+        saveSelectedVehicles(updatedVehicles);
       },
 
       clearSelectedVehicles: () => {

@@ -16,7 +16,9 @@ const VehiclesTab: FC = () => {
         selectedVehicles,
         loadVehicles,
         toggleSelectedVehicle,
-        updateVehicleDescription
+        updateVehicleDescription,
+        updateVehicleHours,
+        updateVehiclePaymentType
     } = useVehicleStore();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -40,8 +42,8 @@ const VehiclesTab: FC = () => {
         eventTypes: vehicle.eventTypes || [],
         category: 'vehicles',
         quantity: 1,
-        paymentType: vehicle.pricePerHour ? 'hourly' : 'full',
-        hours: vehicle.pricePerHour ? 1 : undefined,
+        paymentType: vehicle.paymentType || (vehicle.pricePerHour ? 'hourly' : 'full'),
+        hours: vehicle.hours || (vehicle.pricePerHour ? 1 : undefined),
         fullDetails: vehicle,
         clientDescription: vehicle.clientDescription || ''
     }));
@@ -66,7 +68,19 @@ const VehiclesTab: FC = () => {
     };
 
     const handleUpdateQuantity = (id: string, quantity: number) => {
-        // Для транспортних засобів не потрібно оновлювати кількість
+        console.log('Updating quantity:', { id, quantity });
+        const vehicleToUpdate = selectedVehicles.find(vehicle => vehicle._id === id);
+        if (vehicleToUpdate) {
+            updateVehicleHours(id, quantity);
+        }
+    };
+
+    const handleUpdatePaymentType = (id: string, paymentType: 'full' | 'hourly') => {
+        console.log('Updating payment type:', { id, paymentType });
+        const vehicleToUpdate = selectedVehicles.find(vehicle => vehicle._id === id);
+        if (vehicleToUpdate) {
+            updateVehiclePaymentType(id, paymentType);
+        }
     };
 
     return (
@@ -90,6 +104,7 @@ const VehiclesTab: FC = () => {
                             onUpdateQuantity={handleUpdateQuantity}
                             onRemove={() => handleRemove(item.id)}
                             onUpdateClientDescription={(description) => updateVehicleDescription(item.id, description)}
+                            onUpdatePaymentType={(paymentType) => handleUpdatePaymentType(item.id, paymentType)}
                         />
                     ))}
                 </AnimatePresence>

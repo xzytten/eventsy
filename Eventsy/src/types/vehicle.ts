@@ -19,4 +19,6 @@ export interface IVehicle {
   createdAt?: Date;
   updatedAt?: Date;
   clientDescription?: string;
+  paymentType?: 'full' | 'hourly';
+  hours?: number;
 } 

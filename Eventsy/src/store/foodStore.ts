@@ -61,7 +61,7 @@ const useFoodStore = create<FoodState>()(
             }
             return food;
           });
-
+          
           // Отримуємо поточний стан з localStorage
           const storedData = localStorage.getItem('food-storage');
           let storedState = storedData ? JSON.parse(storedData) : { state: { selectedFood: [] } };

@@ -121,8 +121,8 @@ export const FoodList: FC<FoodListProps> = ({
               transition={{ duration: 0.3 }}
               className="cursor-pointer"
             >
-              <FoodCard 
-                food={food} 
+              <FoodCard
+                food={food}
                 isSelected={selectedFood.some(item => item._id === food._id)}
                 onDetailsClick={handleDetailsClick}
                 onSelect={() => toggleSelectedFood(food)}

@@ -52,41 +52,41 @@ const mapVehicleToCartItem = (vehicle: IVehicle): CartItem => ({
 const useVehicleStore = create<VehicleState>()(
   persist(
     (set, get) => ({
-      vehicles: [],
-      isLoading: false,
+  vehicles: [],
+  isLoading: false,
       isLoaded: false,
-      error: null,
-      selectedVehicles: loadSelectedVehicles(),
+  error: null,
+  selectedVehicles: loadSelectedVehicles(),
 
-      loadVehicles: async () => {
+  loadVehicles: async () => {
         if (get().isLoading) return;
 
-        set({ isLoading: true, error: null });
-        try {
+    set({ isLoading: true, error: null });
+    try {
           const response = await vehicleService.getAll();
           set({
             vehicles: response,
             isLoading: false,
             isLoaded: true
           });
-        } catch (error) {
-          set({
+    } catch (error) {
+      set({ 
             error: 'Помилка завантаження транспортних засобів',
             isLoading: false,
             isLoaded: false
-          });
-        }
-      },
+      });
+    }
+  },
 
       toggleSelectedVehicle: (vehicle: IVehicle) => {
         const { selectedVehicles } = get();
-        const isSelected = selectedVehicles.some(v => v._id === vehicle._id);
+    const isSelected = selectedVehicles.some(v => v._id === vehicle._id);
 
-        if (isSelected) {
+    if (isSelected) {
           set({
             selectedVehicles: selectedVehicles.filter(v => v._id !== vehicle._id)
           });
-        } else {
+    } else {
           set({
             selectedVehicles: [...selectedVehicles, vehicle]
           });
@@ -135,11 +135,11 @@ const useVehicleStore = create<VehicleState>()(
         const updatedVehicles = selectedVehicles.filter(vehicle => vehicle._id !== id);
         set({ selectedVehicles: updatedVehicles });
         saveSelectedVehicles(updatedVehicles);
-      },
+  },
 
-      clearSelectedVehicles: () => {
-        set({ selectedVehicles: [] });
-        saveSelectedVehicles([]);
+  clearSelectedVehicles: () => {
+    set({ selectedVehicles: [] });
+    saveSelectedVehicles([]);
       }
     }),
     {

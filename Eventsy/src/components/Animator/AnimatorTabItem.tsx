@@ -186,26 +186,26 @@ const AnimatorTabItem: FC<CartItemComponentProps> = ({
                 {currentAnimator && (
                     <>
                         {currentAnimator.pricePerHour && currentAnimator.pricePerDay ? (
-                            <div className="flex gap-4">
-                                <button
+                <div className="flex gap-4">
+                    <button
                                     onClick={() => handlePaymentTypeChange('full')}
-                                    className={`flex-1 py-2 px-4 rounded-lg transition-colors cursor-pointer ${item.paymentType === 'full'
-                                        ? 'bg-coral text-white'
-                                        : 'bg-black-30 text-muted hover:bg-white/5'
-                                        }`}
-                                >
-                                    На весь день
-                                </button>
-                                <button
+                        className={`flex-1 py-2 px-4 rounded-lg transition-colors cursor-pointer ${item.paymentType === 'full'
+                                ? 'bg-coral text-white'
+                                : 'bg-black-30 text-muted hover:bg-white/5'
+                            }`}
+                    >
+                        На весь день
+                    </button>
+                    <button
                                     onClick={() => handlePaymentTypeChange('hourly')}
-                                    className={`flex-1 py-2 px-4 rounded-lg transition-colors cursor-pointer ${item.paymentType === 'hourly'
-                                        ? 'bg-coral text-white'
-                                        : 'bg-black-30 text-muted hover:bg-white/5'
-                                        }`}
-                                >
-                                    Погодинно
-                                </button>
-                            </div>
+                        className={`flex-1 py-2 px-4 rounded-lg transition-colors cursor-pointer ${item.paymentType === 'hourly'
+                                ? 'bg-coral text-white'
+                                : 'bg-black-30 text-muted hover:bg-white/5'
+                            }`}
+                    >
+                        Погодинно
+                    </button>
+                </div>
                         ) : currentAnimator.pricePerHour ? (
                             <div className="text-muted mb-2">Оплата погодинно</div>
                         ) : (

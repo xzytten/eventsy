@@ -57,6 +57,7 @@ const CheckoutTab: FC = () => {
             // Встановлюємо прапорець для сторінки успіху
             sessionStorage.setItem('fromCheckout', 'true');
             
+            console.log('Redirecting to /order-success');
             // Перенаправляємо на сторінку успіху
             window.location.href = '/order-success';
         } catch (error) {

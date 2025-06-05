@@ -10,9 +10,8 @@ interface CartItemComponentProps {
     fullDetails?: IFood;
     onRemove?: () => void;
     onUpdateQuantity?: (id: string, quantity: number) => void;
-    onUpdateClientDescription?: ( description: string) => void;
+    onUpdateClientDescription?: (description: string) => void;
     onUpdatePaymentType?: (paymentType: 'full' | 'hourly') => void;
-    onUpdateHours?: (hours: number) => void;
     onDetailsClick: (item: CartItem, fullDetails?: IFood) => void;
 }
 
@@ -54,12 +53,41 @@ const FoodTabItem: FC<CartItemComponentProps> = ({
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: "100px" });
     const [openDescriptionId, setOpenDescriptionId] = useState<string | null>(null);
-    const [editingClientDescription, setEditingClientDescription] = useState<string>('');
+    const updateFoodDescription = useFoodStore(state => state.updateFoodDescription);
+    const updateFoodNumber = useFoodStore(state => state.updateFoodNumber);
+    const removeFood = useFoodStore(state => state.removeFood);
+    const selectedFood = useFoodStore(state => state.selectedFood);
+    const currentFood = selectedFood.find(f => f._id === item.id);
+    const [editingClientDescription, setEditingClientDescription] = useState<{ id: string | null, value: string, isFocused: boolean }>({
+        id: null,
+        value: item.clientDescription || '',
+        isFocused: false
+    });
+
     useEffect(() => {
-        if (item.clientDescription) {
-            setEditingClientDescription(item.clientDescription);
-        }
+        setEditingClientDescription(prev => ({
+            ...prev,
+            value: item.clientDescription || ''
+        }));
     }, [item.clientDescription]);
+
+    const handleRemove = () => {
+        if (item.id) {
+            removeFood(item.id);
+            if (onRemove) {
+                onRemove();
+            }
+        }
+    };
+
+    const handleQuantityChange = (quantity: number) => {
+        if (item.id) {
+            updateFoodNumber(item.id, quantity);
+            if (onUpdateQuantity) {
+                onUpdateQuantity(item.id, quantity);
+            }
+        }
+    };
 
     const imageUrl = fullDetails && 'images' in fullDetails && fullDetails.images?.[0] || item.image || '/placeholder-service.jpg';
     const itemTitle = fullDetails && 'name' in fullDetails ? fullDetails.name : item.title;
@@ -94,8 +122,10 @@ const FoodTabItem: FC<CartItemComponentProps> = ({
                         onClick={() => {
                             if (openDescriptionId === item.id) {
                                 setOpenDescriptionId(null);
+                                setEditingClientDescription({ id: null, value: '', isFocused: false });
                             } else {
                                 setOpenDescriptionId(item.id);
+                                setEditingClientDescription({ id: item.id, value: item.clientDescription || '', isFocused: false });
                             }
                         }}
                         className="mt-2 px-3 py-1 bg-black-30 text-muted text-sm rounded-md hover:bg-white/10 transition-colors flex items-center gap-1 cursor-pointer"
@@ -104,7 +134,7 @@ const FoodTabItem: FC<CartItemComponentProps> = ({
                     </button>
                 </div>
                 <button
-                    onClick={onRemove}
+                    onClick={handleRemove}
                     className="p-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
                 >
                     <Trash2 size={20} className="text-red-500" />
@@ -118,15 +148,21 @@ const FoodTabItem: FC<CartItemComponentProps> = ({
                             className="w-full p-3 rounded-lg bg-black-30 text-white placeholder-muted resize-none pr-24"
                             rows={3}
                             placeholder="Додати опис до замовлення (необов'язково)"
-                            value={editingClientDescription}
-                            onChange={(e) => setEditingClientDescription(e.target.value)}
-                            onBlur={() => {
-                                if (onUpdateClientDescription) {
-                                    onUpdateClientDescription(editingClientDescription);
+                            value={editingClientDescription.id === item.id ? editingClientDescription.value : item.clientDescription || ''}
+                            onChange={(e) => setEditingClientDescription({ id: item.id, value: e.target.value, isFocused: editingClientDescription.isFocused })}
+                            onFocus={() => setEditingClientDescription(prev => ({ ...prev, isFocused: true }))}
+                            onBlur={(e) => {
+                                const description = e.target.value;
+                                if (item.id) {
+                                    updateFoodDescription(item.id, description);
+                                    if (onUpdateClientDescription) {
+                                        onUpdateClientDescription(description);
+                                    }
                                 }
+                                setEditingClientDescription(prev => ({ ...prev, isFocused: false }));
                             }}
                         ></textarea>
-                        <div className="absolute bottom-2 right-2 flex items-center gap-1.5 text-xs text-muted/70">
+                        <div className={`absolute bottom-2 right-2 flex items-center gap-1.5 text-xs text-muted/70 transition-opacity duration-200 ${editingClientDescription.isFocused ? 'opacity-100' : 'opacity-0'}`}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <circle cx="12" cy="12" r="10" />
                                 <line x1="12" y1="16" x2="12" y2="12" />
@@ -137,48 +173,39 @@ const FoodTabItem: FC<CartItemComponentProps> = ({
                     </div>
                 )}
 
-                <div className="flex gap-4">
-                    <button
-                        onClick={() => onUpdatePaymentType?.('full')}
-                        className={`flex-1 py-2 px-4 rounded-lg transition-colors cursor-pointer ${item.paymentType === 'full'
-                                ? 'bg-coral text-white'
-                                : 'bg-black-30 text-muted hover:bg-white/5'
-                            }`}
-                    >
-                        На весь день
-                    </button>
-                    <button
-                        onClick={() => onUpdatePaymentType?.('hourly')}
-                        className={`flex-1 py-2 px-4 rounded-lg transition-colors cursor-pointer ${item.paymentType === 'hourly'
-                                ? 'bg-coral text-white'
-                                : 'bg-black-30 text-muted hover:bg-white/5'
-                            }`}
-                    >
-                        Погодинно
-                    </button>
+                <div className="flex items-center gap-4">
+                    <span className="text-muted">Кількість:</span>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => handleQuantityChange((currentFood?.quantity || 1) - 1)}
+                            disabled={(currentFood?.quantity || 1) <= 1}
+                            className="p-2 hover:bg-white/5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                        >
+                            <Minus size={20} />
+                        </button>
+                        <input
+                            type="number"
+                            min="1"
+                            max="200"
+                            value={currentFood?.quantity || 1}
+                            onChange={(e) => {
+                                const value = parseInt(e.target.value);
+                                if (!isNaN(value) && value >= 1 && value <= 200) {
+                                    handleQuantityChange(value);
+                                }
+                            }}
+                            className="w-16 text-center bg-black-30 border border-white/10 rounded-lg px-2 py-1 text-lg focus:outline-none focus:border-coral transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        <button
+                            onClick={() => handleQuantityChange((currentFood?.quantity || 1) + 1)}
+                            disabled={(currentFood?.quantity || 1) >= 200}
+                            className="p-2 hover:bg-white/5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                        >
+                            <Plus size={20} />
+                        </button>
+                    </div>
                 </div>
 
-                {item.paymentType === 'hourly' && (
-                    <div className="flex items-center gap-4">
-                        <span className="text-muted">Кількість годин:</span>
-                        <div className="flex items-center gap-3">
-                            <button
-                                onClick={() => onUpdateQuantity?.(item.id, (item.quantity || 1) - 1)}
-                                disabled={(item.quantity || 1) <= 1}
-                                className="p-2 hover:bg-white/5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                            >
-                                <Minus size={20} />
-                            </button>
-                            <span className="text-lg">{item.quantity || 1}</span>
-                            <button
-                                onClick={() => onUpdateQuantity?.(item.id, (item.quantity || 1) + 1)}
-                                className="p-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
-                            >
-                                <Plus size={20} />
-                            </button>
-                        </div>
-                    </div>
-                )}
                 <div className="mt-4">
                     <button
                         onClick={() => onDetailsClick(item, fullDetails)}
@@ -191,9 +218,9 @@ const FoodTabItem: FC<CartItemComponentProps> = ({
 
             <div className="flex justify-end">
                 <span className="text-xl font-medium text-coral">
-                    {item.paymentType === 'hourly' && item.hours && item.hourlyPrice
-                        ? `${(item.hourlyPrice) * (item.hours)} ₴`
-                        : `${item.price} ₴`}
+                    {currentFood?.totalPrice 
+                        ? `${currentFood.totalPrice * (currentFood?.quantity || 1)}  ₴`
+                        : `${(currentFood?.price || 0) * (currentFood?.quantity || 1)} ₴`}
                 </span>
             </div>
         </motion.div>

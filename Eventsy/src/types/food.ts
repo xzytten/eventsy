@@ -24,4 +24,5 @@ export interface IFood {
   createdAt?: Date;
   updatedAt?: Date;
   clientDescription?: string;
+  quantity?: number; // кількість для замовлення
 } 

@@ -16,6 +16,7 @@ const FoodTab: FC = () => {
         selectedFood,
         loadFood,
         toggleSelectedFood,
+        removeFood,
         updateFoodDescription
     } = useFoodStore();
 
@@ -63,7 +64,7 @@ const FoodTab: FC = () => {
     const handleRemove = (id: string) => {
         const foodToRemove = selectedFood.find(food => food._id === id);
         if (foodToRemove) {
-            toggleSelectedFood(foodToRemove);
+            removeFood(id);
         }
     };
 

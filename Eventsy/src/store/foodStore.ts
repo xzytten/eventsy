@@ -13,6 +13,8 @@ interface FoodState {
   clearSelectedFood: () => void;
   resetFoodState: () => void;
   updateFoodDescription: (foodId: string, description: string) => void;
+  updateFoodNumber: (foodId: string, number: number) => void;
+  removeFood: (foodId: string) => void;
 }
 
 const useFoodStore = create<FoodState>()(
@@ -76,6 +78,51 @@ const useFoodStore = create<FoodState>()(
         });
       },
 
+      updateFoodNumber: (foodId: string, number: number) => {
+        set((state) => {
+          const updatedSelectedFood = state.selectedFood.map(food => {
+            if (food._id === foodId) {
+              return { ...food, quantity: number };
+            }
+            return food;
+          });
+
+          // Отримуємо поточний стан з localStorage
+          const storedData = localStorage.getItem('food-storage');
+          let storedState = storedData ? JSON.parse(storedData) : { state: { selectedFood: [] } };
+
+          // Оновлюємо quantity в збереженому стані
+          storedState.state.selectedFood = updatedSelectedFood;
+
+          // Зберігаємо оновлений стан назад в localStorage
+          localStorage.setItem('food-storage', JSON.stringify(storedState));
+
+          return { 
+            selectedFood: updatedSelectedFood
+          };
+        });
+      },
+
+      removeFood: (foodId: string) => {
+        set((state) => {
+          const updatedSelectedFood = state.selectedFood.filter(food => food._id !== foodId);
+
+          // Отримуємо поточний стан з localStorage
+          const storedData = localStorage.getItem('food-storage');
+          let storedState = storedData ? JSON.parse(storedData) : { state: { selectedFood: [] } };
+
+          // Оновлюємо selectedFood в збереженому стані
+          storedState.state.selectedFood = updatedSelectedFood;
+
+          // Зберігаємо оновлений стан назад в localStorage
+          localStorage.setItem('food-storage', JSON.stringify(storedState));
+
+          return { 
+            selectedFood: updatedSelectedFood
+          };
+        });
+      },
+
       toggleSelectedFood: (foodItem: IFood) => {
         const { selectedFood } = get();
         const foodId = foodItem._id;
@@ -95,7 +142,8 @@ const useFoodStore = create<FoodState>()(
           const existingFood = selectedFood.find(item => item._id === foodId);
           newSelectedFood = [...selectedFood, {
             ...foodItem,
-            clientDescription: existingFood?.clientDescription || ''
+            clientDescription: existingFood?.clientDescription || '',
+            quantity: 1
           }];
         }
 

@@ -2,9 +2,22 @@ import { type FC } from 'react';
 import { X } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
 import useFoodStore from '@/store/foodStore';
-import CartItemComponent from './CartItemComponent';
-import { type CartItem as CartItemType } from '@/types/cart';
+import { useServiceStore } from '@/store/serviceStore';
 import { type ServiceCategory } from '@/types/services';
+import { type EventType } from '@/types/services';
+
+const eventTypeLabels: Record<EventType, string> = {
+    WEDDING: 'Весілля',
+    BIRTHDAY: 'День народження',
+    CORPORATE: 'Корпоратив',
+    CONFERENCE: 'Конференція',
+    GRADUATION: 'Випускний',
+    BAPTISM: 'Хрестини',
+    ANNIVERSARY: 'Ювілей',
+    BANQUET: 'Банкет',
+    BUFFET: 'Фуршет',
+    ANY_EVENT: 'Будь-який захід'
+};
 
 interface CartProps {
     isOpen: boolean;
@@ -12,9 +25,11 @@ interface CartProps {
 }
 
 const Cart: FC<CartProps> = ({ isOpen, onClose }) => {
-    const { items: cartItems, removeFromCart, getTotalPrice, updateQuantity, toggleCartItem } = useCartStore();
+    const { items: cartItems, getTotalPrice } = useCartStore();
     const { updateFoodDescription } = useFoodStore();
-
+    const { eventType } = useServiceStore();
+    console.log("eventType", eventType)
+    console.log('eventType')
     const handleUpdateClientDescription = (id: string, description: string, category: ServiceCategory) => {
         switch (category) {
             case 'food':
@@ -32,7 +47,14 @@ const Cart: FC<CartProps> = ({ isOpen, onClose }) => {
             <div className="w-full max-w-3xl mx-auto px-4">
                 <div className="rounded-xl flex flex-col max-h-[80vh]">
                     <div className="p-6 border-b border-white/10 flex justify-between items-center">
-                        <h2 className="text-2xl font-semibold">Кошик</h2>
+                        <div>
+                            <h2 className="text-2xl font-semibold">Кошик</h2>
+                            {eventType && (
+                                <p className="text-muted mt-1">
+                                    Тема: <span className="text-coral">{eventTypeLabels[eventType]}</span>
+                                </p>
+                            )}
+                        </div>
                         <button
                             onClick={onClose}
                             className="p-2 hover:bg-white/5 rounded-lg transition-colors"
@@ -40,25 +62,6 @@ const Cart: FC<CartProps> = ({ isOpen, onClose }) => {
                             <X size={24} />
                         </button>
                     </div>
-
-                    <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                        {cartItems.length === 0 ? (
-                            <div className="text-center text-muted py-12 text-lg">
-                                Кошик порожній
-                            </div>
-                        ) : (
-                            cartItems.map((item: CartItemType) => (
-                                <CartItemComponent
-                                    key={item.id}
-                                    item={item}
-                                    onRemove={() => removeFromCart(item.id)}
-                                    onUpdateClientDescription={(desc: string) => handleUpdateClientDescription(item.id, desc, item.category)}
-                                    onUpdateQuantity={(id: string, quantity: number) => updateQuantity(id, quantity)}
-                                />
-                            ))
-                        )}
-                    </div>
-
                     <div className="p-6 border-t border-white/10">
                         <div className="flex justify-between items-center mb-6">
                             <span className="text-xl">Всього:</span>

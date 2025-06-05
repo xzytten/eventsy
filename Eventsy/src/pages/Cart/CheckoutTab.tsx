@@ -5,14 +5,7 @@ import { useUserStore } from '@/store/userStore';
 import { toast } from 'react-hot-toast';
 import { type EventType } from '@/types/services';
 import CustomDatePicker from '@/components/DataPicker/CustomDatePicker';
-
-const eventTypeLabels: Record<EventType, string> = {
-    wedding: 'Весілля',
-    birthday: 'День народження',
-    corporate: 'Корпоратив',
-    graduation: 'Випускний',
-    holiday: 'Свято'
-};
+import { EVENT_TYPE_NAMES } from '@/constants/types';
 
 const CheckoutTab: FC = () => {
     const { 
@@ -25,6 +18,7 @@ const CheckoutTab: FC = () => {
         setEventDate 
     } = useServiceStore();
     const { isAuthenticated } = useUserStore();
+    console.log("eventType", eventType);
 
     // Calculate minimum date (2 days from now)
     const minDate = new Date();
@@ -70,7 +64,7 @@ const CheckoutTab: FC = () => {
                 <div className="space-y-1">
                     <p className="text-lg font-medium">Тема:</p>
                     <p className="font-semibold text-xl text-coral">
-                        {eventType ? eventTypeLabels[eventType] : 'Не вибрано'}
+                        {eventType ? EVENT_TYPE_NAMES[eventType] : 'Не вибрано'}
                     </p>
                 </div>
 

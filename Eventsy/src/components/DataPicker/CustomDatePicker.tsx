@@ -41,14 +41,13 @@ export default function CustomDatePicker({
   className = '',
 }: CustomDatePickerProps) {
   // Форматування дати для відображення (день місяць рік, місяць повністю)
-  const formatted =
-    value
-      ? value.toLocaleDateString('uk-UA', {
-          day: '2-digit',
-          month: 'long',
-          year: 'numeric',
-        })
-      : placeholder;
+  const formatted = value instanceof Date
+    ? value.toLocaleDateString('uk-UA', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      })
+    : placeholder;
 
   return (
     <div className={`relative flex items-center gap-3 ${className}`}>

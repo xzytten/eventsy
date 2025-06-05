@@ -1,21 +1,22 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { IVehicle } from '@/types/vehicle';
 import { vehicleService } from '@/services/vehicleService';
-import { useCartStore } from '@/store/cartStore';
 import { type CartItem } from '@/types/cart';
 
 interface VehicleState {
   vehicles: IVehicle[];
   isLoading: boolean;
+  isLoaded: boolean;
   error: string | null;
   selectedVehicles: IVehicle[];
   loadVehicles: () => Promise<void>;
-  selectVehicle: (vehicle: IVehicle) => void;
-  removeVehicle: (vehicleId: string) => void;
+  toggleSelectedVehicle: (vehicle: IVehicle) => void;
+  updateVehicleDescription: (id: string, description: string) => void;
   clearSelectedVehicles: () => void;
 }
 
-const localStorageKey = 'selectedVehicles';
+const localStorageKey = 'vehicle-storage';
 
 // Helper to save selected vehicles to local storage
 const saveSelectedVehicles = (vehicles: IVehicle[]) => {
@@ -45,61 +46,73 @@ const mapVehicleToCartItem = (vehicle: IVehicle): CartItem => ({
   hours: vehicle.pricePerHour ? 1 : undefined
 });
 
-export const useVehicleStore = create<VehicleState>((set, get) => ({
-  // Initial state
-  vehicles: [],
-  isLoading: false,
-  error: null,
-  selectedVehicles: loadSelectedVehicles(),
+const useVehicleStore = create<VehicleState>()(
+  persist(
+    (set, get) => ({
+      vehicles: [],
+      isLoading: false,
+      isLoaded: false,
+      error: null,
+      selectedVehicles: loadSelectedVehicles(),
 
-  // Actions
-  loadVehicles: async () => {
-    const { vehicles, isLoading } = get();
-    // If already loading or data exists, do nothing
-    if (isLoading || vehicles.length > 0) {
-      return;
+      loadVehicles: async () => {
+        if (get().isLoading) return;
+
+        set({ isLoading: true, error: null });
+        try {
+          const response = await vehicleService.getAll();
+          set({
+            vehicles: response,
+            isLoading: false,
+            isLoaded: true
+          });
+        } catch (error) {
+          set({
+            error: 'Помилка завантаження транспортних засобів',
+            isLoading: false,
+            isLoaded: false
+          });
+        }
+      },
+
+      toggleSelectedVehicle: (vehicle: IVehicle) => {
+        const { selectedVehicles } = get();
+        const isSelected = selectedVehicles.some(v => v._id === vehicle._id);
+
+        if (isSelected) {
+          set({
+            selectedVehicles: selectedVehicles.filter(v => v._id !== vehicle._id)
+          });
+        } else {
+          set({
+            selectedVehicles: [...selectedVehicles, vehicle]
+          });
+        }
+      },
+
+      updateVehicleDescription: (id: string, description: string) => {
+        const { selectedVehicles } = get();
+        set({
+          selectedVehicles: selectedVehicles.map(vehicle =>
+            vehicle._id === id
+              ? { ...vehicle, clientDescription: description }
+              : vehicle
+          )
+        });
+      },
+
+      clearSelectedVehicles: () => {
+        set({ selectedVehicles: [] });
+        saveSelectedVehicles([]);
+      }
+    }),
+    {
+      name: 'vehicle-storage',
+      partialize: (state) => ({
+        selectedVehicles: state.selectedVehicles
+      })
     }
-    set({ isLoading: true, error: null });
-    try {
-      const vehicleData = await vehicleService.getAll();
-      set({ vehicles: vehicleData, isLoading: false });
-    } catch (error) {
-      set({ 
-        error: 'Помилка завантаження транспорту', 
-        isLoading: false 
-      });
-      console.error('Помилка завантаження транспорту:', error);
-    }
-  },
+  )
+);
 
-  selectVehicle: (vehicle) => {
-    const selectedVehicles = get().selectedVehicles;
-    const isSelected = selectedVehicles.some(v => v._id === vehicle._id);
-
-    if (isSelected) {
-      // If already selected, remove it
-      const newSelectedVehicles = selectedVehicles.filter(v => v._id !== vehicle._id);
-      set({ selectedVehicles: newSelectedVehicles });
-      saveSelectedVehicles(newSelectedVehicles);
-      useCartStore.getState().toggleCartItem(mapVehicleToCartItem(vehicle));
-    } else {
-      // If not selected, add it
-      const newSelectedVehicles = [...selectedVehicles, vehicle];
-      set({ selectedVehicles: newSelectedVehicles });
-      saveSelectedVehicles(newSelectedVehicles);
-      useCartStore.getState().toggleCartItem(mapVehicleToCartItem(vehicle));
-    }
-  },
-
-  removeVehicle: (vehicleId) => {
-    const selectedVehicles = get().selectedVehicles;
-    const newSelectedVehicles = selectedVehicles.filter(v => v._id !== vehicleId);
-    set({ selectedVehicles: newSelectedVehicles });
-    saveSelectedVehicles(newSelectedVehicles);
-  },
-
-  clearSelectedVehicles: () => {
-    set({ selectedVehicles: [] });
-    saveSelectedVehicles([]);
-  },
-}));
+export { useVehicleStore };

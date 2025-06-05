@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import type { IAnimator } from '@/types/animator';
 import { animatorService } from '@/services/animatorService';
 
@@ -6,7 +7,6 @@ interface AnimatorState {
   animators: IAnimator[];
   selectedAnimators: IAnimator[];
   isLoading: boolean;
-  isLoaded: boolean;
   error: string | null;
 
   loadAnimators: () => Promise<void>;
@@ -18,121 +18,94 @@ interface AnimatorState {
   updateAnimatorHours: (animatorId: string, hours: number) => void;
 }
 
-const animatorsLocalStorageKey = 'allAnimators';
-const selectedAnimatorsLocalStorageKey = 'selectedAnimators';
+export const useAnimatorStore = create<AnimatorState>()(
+  persist(
+    (set, get) => ({
+      animators: [],
+      selectedAnimators: [],
+      isLoading: false,
+      error: null,
 
-const saveAllAnimators = (animators: IAnimator[]) => {
-  try {
-    localStorage.setItem(animatorsLocalStorageKey, JSON.stringify(animators));
-  } catch (e) {
-    console.error('Error saving all animators to localStorage:', e);
-  }
-};
+      loadAnimators: async () => {
+        const { isLoading } = get();
+        if (isLoading) return;
 
-const loadAllAnimators = (): IAnimator[] => {
-  try {
-    const stored = localStorage.getItem(animatorsLocalStorageKey);
-    return stored ? JSON.parse(stored) : [];
-  } catch (e) {
-    console.error('Error loading animators:', e);
-    return [];
-  }
-};
+        set({ isLoading: true, error: null });
 
-const saveSelectedAnimators = (animators: IAnimator[]) => {
-  try {
-    localStorage.setItem(selectedAnimatorsLocalStorageKey, JSON.stringify(animators));
-  } catch (e) {
-    console.error('Error saving selected animators:', e);
-  }
-};
+        try {
+          const animatorsData = await animatorService.getAll();
+          set({ 
+            animators: animatorsData, 
+            isLoading: false,
+            error: null 
+          });
+        } catch (error) {
+          console.error('Помилка завантаження аніматорів:', error);
+          set({ 
+            error: 'Помилка завантаження аніматорів', 
+            isLoading: false
+          });
+        }
+      },
 
-const loadSelectedAnimators = (): IAnimator[] => {
-  try {
-    const stored = localStorage.getItem(selectedAnimatorsLocalStorageKey);
-    return stored ? JSON.parse(stored) : [];
-  } catch (e) {
-    console.error('Error loading selected animators:', e);
-    return [];
-  }
-};
+      selectAnimator: (animator) => {
+        const { selectedAnimators } = get();
+        const isSelected = selectedAnimators.some(a => a._id === animator._id);
+        const updated = isSelected
+          ? selectedAnimators.filter(a => a._id !== animator._id)
+          : [...selectedAnimators, animator];
 
-export const useAnimatorStore = create<AnimatorState>((set, get) => ({
-  animators: loadAllAnimators(),
-  selectedAnimators: loadSelectedAnimators(),
-  isLoading: false,
-  isLoaded: loadAllAnimators().length > 0,
-  error: null,
+        set({ selectedAnimators: updated });
+      },
 
-  loadAnimators: async () => {
-    const { isLoading, isLoaded } = get();
-    if (isLoading || isLoaded) return;
+      removeAnimator: (animatorId) => {
+        const updated = get().selectedAnimators.filter(a => a._id !== animatorId);
+        set({ selectedAnimators: updated });
+      },
 
-    set({ isLoading: true, error: null });
+      resetAnimatorState: () => {
+        set({ selectedAnimators: [] });
+      },
 
-    try {
-      const animatorsData = await animatorService.getAll();
-      set({ animators: animatorsData, isLoading: false, isLoaded: true });
-      saveAllAnimators(animatorsData);
-    } catch (error) {
-      set({ error: 'Помилка завантаження аніматорів', isLoading: false });
-      console.error('Помилка завантаження аніматорів:', error);
+      updateAnimatorDescription: (animatorId, description) =>
+        set((state) => {
+          const updatedSelectedAnimators = state.selectedAnimators.map(animator =>
+            animator._id === animatorId ? { ...animator, clientDescription: description } : animator
+          );
+
+          return {
+            selectedAnimators: updatedSelectedAnimators
+          };
+        }),
+
+      updateAnimatorPaymentType: (animatorId, paymentType) =>
+        set((state) => {
+          const updated = state.selectedAnimators.map(animator =>
+            animator._id === animatorId
+              ? {
+                  ...animator,
+                  paymentType,
+                  hours: paymentType === 'hourly' ? animator.hours || 1 : undefined
+                }
+              : animator
+          );
+          return { selectedAnimators: updated };
+        }),
+
+      updateAnimatorHours: (animatorId, hours) =>
+        set((state) => {
+          const updated = state.selectedAnimators.map(animator =>
+            animator._id === animatorId ? { ...animator, hours } : animator
+          );
+          return { selectedAnimators: updated };
+        }),
+    }),
+    {
+      name: 'animator-storage',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        selectedAnimators: state.selectedAnimators
+      })
     }
-  },
-
-  selectAnimator: (animator) => {
-    const { selectedAnimators } = get();
-    const isSelected = selectedAnimators.some(a => a._id === animator._id);
-    const updated = isSelected
-      ? selectedAnimators.filter(a => a._id !== animator._id)
-      : [...selectedAnimators, animator];
-
-    set({ selectedAnimators: updated });
-    saveSelectedAnimators(updated);
-  },
-
-  removeAnimator: (animatorId) => {
-    const updated = get().selectedAnimators.filter(a => a._id !== animatorId);
-    set({ selectedAnimators: updated });
-    saveSelectedAnimators(updated);
-  },
-
-  resetAnimatorState: () => {
-    set({ selectedAnimators: [], isLoaded: false });
-    localStorage.removeItem(selectedAnimatorsLocalStorageKey);
-    localStorage.removeItem(animatorsLocalStorageKey);
-  },
-
-  updateAnimatorDescription: (animatorId, description) =>
-    set((state) => {
-      const updated = state.selectedAnimators.map(animator =>
-        animator._id === animatorId ? { ...animator, description } : animator
-      );
-      saveSelectedAnimators(updated);
-      return { selectedAnimators: updated };
-    }),
-
-  updateAnimatorPaymentType: (animatorId, paymentType) =>
-    set((state) => {
-      const updated = state.selectedAnimators.map(animator =>
-        animator._id === animatorId
-          ? {
-              ...animator,
-              paymentType,
-              hours: paymentType === 'hourly' ? animator.hours || 1 : undefined
-            }
-          : animator
-      );
-      saveSelectedAnimators(updated);
-      return { selectedAnimators: updated };
-    }),
-
-  updateAnimatorHours: (animatorId, hours) =>
-    set((state) => {
-      const updated = state.selectedAnimators.map(animator =>
-        animator._id === animatorId ? { ...animator, hours } : animator
-      );
-      saveSelectedAnimators(updated);
-      return { selectedAnimators: updated };
-    }),
-}));
+  )
+);

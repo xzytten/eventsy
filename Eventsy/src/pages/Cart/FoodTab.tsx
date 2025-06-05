@@ -1,12 +1,10 @@
 import { type FC, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import CartItemComponent from './CartItemComponent';
+import FoodTabItem from '@/components/Food/FoodTabItem';
 import useFoodStore from '@/store/foodStore';
 import { type IFood } from '@/types/food';
 import { type CartItem } from '@/types/cart';
 import FoodDetailsModal from '@/components/Food/FoodDetailsModal';
-import { type FullServiceDetails } from './CartItemComponent';
-
 
 interface DetailedFoodCartItem extends CartItem {
     fullDetails?: IFood;
@@ -15,8 +13,10 @@ interface DetailedFoodCartItem extends CartItem {
 const FoodTab: FC = () => {
     const {
         food: availableFood,
-        selectedFoodIds,
+        selectedFood,
         loadFood,
+        toggleSelectedFood,
+        updateFoodDescription
     } = useFoodStore();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,9 +28,7 @@ const FoodTab: FC = () => {
         }
     }, [availableFood.length, loadFood]);
 
-    const selectedFoodItems = availableFood.filter(food => selectedFoodIds.includes(food._id ?? ''));
-
-    const detailedFoodItems: DetailedFoodCartItem[] = selectedFoodItems.map((food) => ({
+    const detailedFoodItems: DetailedFoodCartItem[] = selectedFood.map((food) => ({
         id: food._id ?? '',
         title: food.name || food.type || 'Їжа',
         category: 'food',
@@ -42,12 +40,13 @@ const FoodTab: FC = () => {
         location: 'Київ',
         paymentType: 'full',
         description: food.description || '',
+        clientDescription: food.clientDescription || '',
         fullDetails: food
     }));
 
-    const handleDetailsClick = (item: CartItem, fullDetails?: FullServiceDetails) => {
-        if (fullDetails && 'items' in fullDetails) {
-            setSelectedFoodForDetails(fullDetails as IFood);
+    const handleDetailsClick = (item: CartItem, fullDetails?: IFood) => {
+        if (fullDetails) {
+            setSelectedFoodForDetails(fullDetails);
             setIsModalOpen(true);
         }
     };
@@ -55,6 +54,17 @@ const FoodTab: FC = () => {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setSelectedFoodForDetails(null);
+    };
+
+    const handleUpdateQuantity = (id: string, quantity: number) => {
+        // Для їжі не потрібно оновлювати кількість
+    };
+
+    const handleRemove = (id: string) => {
+        const foodToRemove = selectedFood.find(food => food._id === id);
+        if (foodToRemove) {
+            toggleSelectedFood(foodToRemove);
+        }
     };
 
     return (
@@ -70,11 +80,14 @@ const FoodTab: FC = () => {
             <div className="space-y-4">
                 <AnimatePresence mode="popLayout">
                     {detailedFoodItems.map((item) => (
-                        <CartItemComponent
+                        <FoodTabItem
                             key={item.id}
                             item={item}
                             fullDetails={item.fullDetails}
                             onDetailsClick={handleDetailsClick}
+                            onUpdateQuantity={handleUpdateQuantity}
+                            onRemove={() => handleRemove(item.id)}
+                            onUpdateClientDescription={(description) => updateFoodDescription(item.id, description)}
                         />
                     ))}
                 </AnimatePresence>

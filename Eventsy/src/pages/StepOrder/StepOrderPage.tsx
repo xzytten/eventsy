@@ -77,9 +77,9 @@ const StepOrderPage = () => {
             console.log('Explicitly clearing service localStorage keys as a safeguard...');
             localStorage.removeItem('eventsy_event_type');
             localStorage.removeItem('food-storage');
-            localStorage.removeItem('selectedAnimators');
-            localStorage.removeItem('selectedVenues');
-            localStorage.removeItem('selectedVehicles');
+            localStorage.removeItem('animator-storage');
+            localStorage.removeItem('venue-storage');
+            localStorage.removeItem('vehicle-storage');
             console.log('Finished explicitly clearing service localStorage keys as a safeguard.');
 
             // Set new event type and step

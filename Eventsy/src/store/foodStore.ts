@@ -2,15 +2,12 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { IFood } from '@/types/food';
 import { foodService } from '@/services/foodService';
-import { useCartStore } from '@/store/cartStore';
-import { type CartItem } from '@/types/cart';
 
 interface FoodState {
   food: IFood[];
   isLoading: boolean;
   error: string | null;
-  selectedFoodIds: string[];
-  foodDescriptions: Record<string, string>;
+  selectedFood: IFood[];
   loadFood: () => Promise<void>;
   toggleSelectedFood: (foodItem: IFood) => void;
   clearSelectedFood: () => void;
@@ -25,8 +22,7 @@ const useFoodStore = create<FoodState>()(
       food: [],
       isLoading: false,
       error: null,
-      selectedFoodIds: [],
-      foodDescriptions: {},
+      selectedFood: [],
 
       // Actions
       loadFood: async () => {
@@ -53,85 +49,75 @@ const useFoodStore = create<FoodState>()(
         console.log('Updating food description:', { foodId, description });
         
         set((state) => {
-          const newDescriptions = {
-            ...state.foodDescriptions,
-            [foodId]: description
+          // Оновлюємо опис в selectedFood
+          const updatedSelectedFood = state.selectedFood.map(food => {
+            if (food._id === foodId) {
+              const updatedFood = { ...food, clientDescription: description };
+              console.log(updatedFood)
+              console.log('Updated food item:', updatedFood);
+              return updatedFood;
+            }
+            return food;
+          });
+
+          // Отримуємо поточний стан з localStorage
+          const storedData = localStorage.getItem('food-storage');
+          let storedState = storedData ? JSON.parse(storedData) : { state: { selectedFood: [] } };
+
+          // Оновлюємо clientDescription в збереженому стані
+          storedState.state.selectedFood = updatedSelectedFood;
+
+          // Зберігаємо оновлений стан назад в localStorage
+          localStorage.setItem('food-storage', JSON.stringify(storedState));
+
+          return { 
+            selectedFood: updatedSelectedFood
           };
-          
-          // Оновлюємо опис в кошику
-          const cartStore = useCartStore.getState();
-          const cartItem = cartStore.items.find(item => item.id === foodId);
-          if (cartItem) {
-            cartStore.updateDescription(foodId, description);
-          }
-          
-          return { foodDescriptions: newDescriptions };
         });
       },
 
       toggleSelectedFood: (foodItem: IFood) => {
-        const selectedIds = get().selectedFoodIds;
+        const { selectedFood } = get();
         const foodId = foodItem._id;
 
         if (!foodId) {
             console.error('Food item is missing an _id:', foodItem);
-            return; // Exit if no ID
+            return;
         }
 
-        const isSelected = selectedIds.includes(foodId);
-        let newSelectedIds;
+        const isSelected = selectedFood.some(item => item._id === foodId);
+        let newSelectedFood;
 
         if (isSelected) {
-          newSelectedIds = selectedIds.filter(id => id !== foodId);
+          newSelectedFood = selectedFood.filter(item => item._id !== foodId);
         } else {
-          newSelectedIds = [...selectedIds, foodId];
+          // При додаванні нової їжі, зберігаємо її з поточним clientDescription
+          const existingFood = selectedFood.find(item => item._id === foodId);
+          newSelectedFood = [...selectedFood, {
+            ...foodItem,
+            clientDescription: existingFood?.clientDescription || ''
+          }];
         }
 
-        set({ selectedFoodIds: newSelectedIds });
-
-        // Create a CartItem representation and toggle it in cartStore
-        const cartItem: CartItem = {
-            id: foodId,
-            title: foodItem.name || foodItem.type || 'Їжа',
-            category: 'food',
-            price: foodItem.price || foodItem.totalPrice,
-            image: foodItem.images?.[0] || '/placeholder-food.jpg',
-            eventTypes: foodItem.eventTypes || [],
-            quantity: 1,
-            duration: '1 день',
-            location: 'Київ',
-            paymentType: 'full',
-            description: get().foodDescriptions[foodId] || ''
-        };
-
-        useCartStore.getState().toggleCartItem(cartItem);
+        set({ selectedFood: newSelectedFood });
       },
 
       clearSelectedFood: () => {
-        set({ selectedFoodIds: [], foodDescriptions: {} });
-        // Clear corresponding items from the cart in cartStore
-        const currentCartItems = useCartStore.getState().items;
-        const foodCartItems = currentCartItems.filter((item: CartItem) => item.category === 'food');
-        foodCartItems.forEach((item: CartItem) => useCartStore.getState().removeFromCart(item.id));
+        set({ selectedFood: [] });
       },
 
       resetFoodState: () => {
-        set({ food: [], selectedFoodIds: [], foodDescriptions: {} });
+        set({ food: [], selectedFood: [] });
         // Explicitly remove the key from localStorage managed by this store
         localStorage.removeItem('food-storage');
         console.log('Food store state and localStorage cleared.');
-        // Also ensure corresponding items are removed from the cart in cartStore
-        const currentCartItems = useCartStore.getState().items;
-        const foodCartItems = currentCartItems.filter((item: CartItem) => item.category === 'food');
-        foodCartItems.forEach((item: CartItem) => useCartStore.getState().removeFromCart(item.id));
       },
     }),
     {
       name: 'food-storage',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        selectedFoodIds: state.selectedFoodIds,
-        foodDescriptions: state.foodDescriptions
+        selectedFood: state.selectedFood
       })
     }
   )

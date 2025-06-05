@@ -2,7 +2,7 @@ import { type FC, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useFoodStore from '@/store/foodStore';
 import FoodCard from './FoodCard';
-import { type IFood } from '@/types/food';
+import type { IFood } from '@/types/food';
 import FoodDetailsModal from './FoodDetailsModal';
 import { type EventType } from '@/constants/types';
 
@@ -16,20 +16,33 @@ interface FoodListProps {
   showSelectButton?: boolean;
 }
 
-export const FoodList: FC<FoodListProps> = ({ selectedEventTypes = [], priceRange, onMaxPriceChange, showSelectButton = false }) => {
-  const { food: availableFood, isLoading, error, loadFood, selectedFoodIds, toggleSelectedFood } = useFoodStore();
+export const FoodList: FC<FoodListProps> = ({ 
+  selectedEventTypes = [], 
+  priceRange, 
+  onMaxPriceChange,
+  showSelectButton = false
+}) => {
+  const { 
+    food: availableFood, 
+    isLoading, 
+    error, 
+    loadFood,
+    selectedFood,
+    toggleSelectedFood
+  } = useFoodStore();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedFoodForDetails, setSelectedFoodForDetails] = useState<IFood | null>(null);
 
   useEffect(() => {
-    if (availableFood.length === 0 && !isLoading) {
+    if (!isLoading && availableFood.length === 0) {
       loadFood();
     }
-  }, [availableFood.length, isLoading, loadFood]);
+  }, [isLoading, availableFood.length, loadFood]);
 
   useEffect(() => {
-    const max = availableFood.reduce((acc, food) => {
-      const price = food.price ?? food.totalPrice ?? 0;
+    const max = availableFood.reduce((acc: number, food: IFood) => {
+      const price = food.price || food.totalPrice || 0;
       return price > acc ? price : acc;
     }, 0);
     onMaxPriceChange?.(max);
@@ -49,15 +62,15 @@ export const FoodList: FC<FoodListProps> = ({ selectedEventTypes = [], priceRang
   const filteredFood = availableFood.filter((food: IFood) => {
     // Фільтр за типом події
     if (selectedEventTypes?.length > 0) {
-      const hasMatchingEventType = food.eventTypes?.some((type: EventType) => 
-        selectedEventTypes.includes(type)
+      const hasMatchingEventType = food.eventTypes?.some((type) => 
+        selectedEventTypes.includes(type as EventType)
       );
       if (!hasMatchingEventType) return false;
     }
 
     // Фільтр за ціною
     if (priceRange) {
-      const price = food.price ?? food.totalPrice ?? 0;
+      const price = food.price || food.totalPrice || 0;
       if (price < priceRange.min || price > priceRange.max) {
         return false;
       }
@@ -108,11 +121,11 @@ export const FoodList: FC<FoodListProps> = ({ selectedEventTypes = [], priceRang
               transition={{ duration: 0.3 }}
               className="cursor-pointer"
             >
-              <FoodCard
-                food={food}
-                isSelected={selectedFoodIds.includes(food._id ?? '')}
+              <FoodCard 
+                food={food} 
+                isSelected={selectedFood.some(item => item._id === food._id)}
                 onDetailsClick={handleDetailsClick}
-                onSelect={toggleSelectedFood}
+                onSelect={() => toggleSelectedFood(food)}
                 showSelectButton={showSelectButton}
               />
             </motion.div>

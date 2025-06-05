@@ -23,4 +23,5 @@ export interface IFood {
   isActive: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+  clientDescription?: string;
 } 

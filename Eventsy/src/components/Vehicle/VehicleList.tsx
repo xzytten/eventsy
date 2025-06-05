@@ -29,7 +29,7 @@ export const VehicleList: FC<VehicleListProps> = ({
     isLoading, 
     error, 
     loadVehicles,
-    selectVehicle,
+    toggleSelectedVehicle,
     selectedVehicles
   } = useVehicleStore();
 
@@ -127,7 +127,7 @@ export const VehicleList: FC<VehicleListProps> = ({
                 vehicle={vehicle} 
                 onDetailsClick={handleDetailsClick}
                 isSelected={selectedVehicles.some(v => v._id === vehicle._id)}
-                onSelect={selectVehicle}
+                onSelect={toggleSelectedVehicle}
                 showSelectButton={showSelectButton}
               />
             </motion.div>

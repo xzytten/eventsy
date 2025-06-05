@@ -19,4 +19,5 @@ export interface IVenue {
   createdAt?: Date;
   updatedAt?: Date;
   images?: string[];
+  clientDescription?: string;
 } 

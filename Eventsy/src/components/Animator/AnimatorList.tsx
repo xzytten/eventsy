@@ -36,10 +36,10 @@ export const AnimatorList: FC<AnimatorListProps> = ({
   const [selectedAnimatorForDetails, setSelectedAnimatorForDetails] = useState<IAnimator | null>(null);
 
   useEffect(() => {
-    if (availableAnimators.length === 0 && !isLoading) {
+    if (!isLoading && availableAnimators.length === 0) {
       loadAnimators();
     }
-  }, [availableAnimators.length, isLoading, loadAnimators]);
+  }, [isLoading, availableAnimators.length, loadAnimators]);
 
   useEffect(() => {
     const max = availableAnimators.reduce((acc: number, animator: IAnimator) => {
@@ -57,6 +57,10 @@ export const AnimatorList: FC<AnimatorListProps> = ({
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedAnimatorForDetails(null);
+  };
+
+  const handleSelectAnimator = (animator: IAnimator) => {
+    selectAnimator(animator);
   };
 
   // Фільтрація аніматорів за вибраними критеріями
@@ -125,7 +129,7 @@ export const AnimatorList: FC<AnimatorListProps> = ({
               <AnimatorCard 
                 animator={animator} 
                 onDetailsClick={handleDetailsClick}
-                onSelect={selectAnimator}
+                onSelect={handleSelectAnimator}
                 showSelectButton={showSelectButton}
               />
             </motion.div>

@@ -16,4 +16,5 @@ export interface CartItem {
     hours?: number;
     description?: string;
     eventTypes: EventType[];
+    clientDescription?: string;
 } 

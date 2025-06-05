@@ -18,6 +18,7 @@ export interface IAnimator {
   _id: string;
   name: string;
   description?: string;
+  clientDescription?: string;
   specialties: string[];
   eventTypes: string[];
   ageRange: {

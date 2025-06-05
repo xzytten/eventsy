@@ -1,12 +1,12 @@
 import { type FC, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAnimatorStore } from '@/store/animatorStore';
-import CartItemComponent from './CartItemComponent';
 import AnimatorDetailsModal from '@/components/Animator/AnimatorDetailsModal';
 import { type IAnimator } from '@/types/animator';
 import { type CartItem } from '@/types/cart';
 import { type FullServiceDetails } from './CartItemComponent';
 import { type EventType } from '@/constants/types';
+import AnimatorTabItem from '@/components/Animator/AnimatorTabItem';
 
 interface DetailedAnimatorCartItem extends CartItem {
   fullDetails?: IAnimator;
@@ -17,6 +17,7 @@ const AnimatorsTab: FC = () => {
     animators,
     selectedAnimators,
     loadAnimators,
+    updateAnimatorDescription
   } = useAnimatorStore();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,6 +28,10 @@ const AnimatorsTab: FC = () => {
       loadAnimators();
     }
   }, [animators.length, loadAnimators]);
+
+  const handleUpdateClientDescription = (animatorId: string, description: string) => {
+    updateAnimatorDescription(animatorId, description);
+  };
 
   const detailedAnimatorItems: DetailedAnimatorCartItem[] = selectedAnimators.map(animator => ({
     id: animator._id,
@@ -40,6 +45,7 @@ const AnimatorsTab: FC = () => {
     paymentType: animator.paymentType || (animator.pricePerHour ? 'hourly' : 'full'),
     hours: animator.hours || (animator.pricePerHour ? 1 : undefined),
     description: animator.description || '',
+    clientDescription: animator.clientDescription || '',
     location: 'Київ',
     eventTypes: (animator.eventTypes || []) as EventType[],
     fullDetails: animator
@@ -70,11 +76,12 @@ const AnimatorsTab: FC = () => {
       <div className="space-y-4">
         <AnimatePresence mode="popLayout">
           {detailedAnimatorItems.map((item) => (
-            <CartItemComponent
+            <AnimatorTabItem
               key={item.id}
               item={item}
               fullDetails={item.fullDetails}
               onDetailsClick={handleDetailsClick}
+              onUpdateClientDescription={handleUpdateClientDescription}
             />
           ))}
         </AnimatePresence>

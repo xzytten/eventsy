@@ -11,9 +11,11 @@ interface VenueState {
     selectVenue: (venue: IVenue) => void;
     removeVenue: (venueId: string) => void;
     clearSelectedVenues: () => void;
+    toggleSelectedVenue: (venue: IVenue) => void;
+    updateVenueDescription: (venueId: string, description: string) => void;
 }
 
-const localStorageKey = 'selectedVenues';
+const localStorageKey = 'venue-storage';
 
 // Helper to save selected venues to local storage
 const saveSelectedVenues = (venues: IVenue[]) => {
@@ -75,4 +77,30 @@ export const useVenueStore = create<VenueState>((set, get) => ({
         set({ selectedVenues: [] });
         saveSelectedVenues([]);
     },
+
+    toggleSelectedVenue: (venue) => {
+        const selectedVenues = get().selectedVenues;
+        const isSelected = selectedVenues.some(v => v._id === venue._id);
+        
+        if (isSelected) {
+            const newSelectedVenues = selectedVenues.filter(v => v._id !== venue._id);
+            set({ selectedVenues: newSelectedVenues });
+            saveSelectedVenues(newSelectedVenues);
+        } else {
+            const newSelectedVenues = [venue]; // Select only the new one
+            set({ selectedVenues: newSelectedVenues });
+            saveSelectedVenues(newSelectedVenues);
+        }
+    },
+
+    updateVenueDescription: (venueId, description) => {
+        const selectedVenues = get().selectedVenues;
+        const updatedVenues = selectedVenues.map(venue => 
+            venue._id === venueId 
+                ? { ...venue, clientDescription: description }
+                : venue
+        );
+        set({ selectedVenues: updatedVenues });
+        saveSelectedVenues(updatedVenues);
+    }
 })); 

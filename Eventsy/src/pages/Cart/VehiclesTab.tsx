@@ -1,29 +1,33 @@
-import { type FC, useState, useEffect } from 'react';
+import { type FC, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import CartItemComponent from './CartItemComponent';
 import { useVehicleStore } from '@/store/vehicleStore';
 import { type IVehicle } from '@/types/vehicle';
 import { type CartItem } from '@/types/cart';
 import VehicleDetailsModal from '@/components/Vehicle/VehicleDetailsModal';
-import { type FullServiceDetails } from './CartItemComponent';
+import VehicleTabItem from '@/components/Vehicle/VehicleTabItem';
 
 interface DetailedVehicleCartItem extends CartItem {
     fullDetails?: IVehicle;
 }
+
 const VehiclesTab: FC = () => {
     const {
+        vehicles,
+        selectedVehicles,
         loadVehicles,
-        selectedVehicles
+        toggleSelectedVehicle,
+        updateVehicleDescription
     } = useVehicleStore();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedVehicleForDetails, setSelectedVehicleForDetails] = useState<IVehicle | null>(null);
 
     useEffect(() => {
-        loadVehicles();
-    }, [loadVehicles]);
+        if (vehicles.length === 0) {
+            loadVehicles();
+        }
+    }, [vehicles.length, loadVehicles]);
 
-    // Мапимо selectedVehicles у CartItemComponent-формат (псевдо-карти)
     const detailedVehicleItems: DetailedVehicleCartItem[] = selectedVehicles.map(vehicle => ({
         id: vehicle._id || '',
         title: vehicle.name,
@@ -39,11 +43,12 @@ const VehiclesTab: FC = () => {
         paymentType: vehicle.pricePerHour ? 'hourly' : 'full',
         hours: vehicle.pricePerHour ? 1 : undefined,
         fullDetails: vehicle,
+        clientDescription: vehicle.clientDescription || ''
     }));
 
-    const handleDetailsClick = (item: CartItem, fullDetails?: FullServiceDetails) => {
-        if (fullDetails && 'brand' in fullDetails) {
-            setSelectedVehicleForDetails(fullDetails as IVehicle);
+    const handleDetailsClick = (item: CartItem, fullDetails?: IVehicle) => {
+        if (fullDetails) {
+            setSelectedVehicleForDetails(fullDetails);
             setIsModalOpen(true);
         }
     };
@@ -51,6 +56,17 @@ const VehiclesTab: FC = () => {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setSelectedVehicleForDetails(null);
+    };
+
+    const handleRemove = (id: string) => {
+        const vehicleToRemove = selectedVehicles.find(vehicle => vehicle._id === id);
+        if (vehicleToRemove) {
+            toggleSelectedVehicle(vehicleToRemove);
+        }
+    };
+
+    const handleUpdateQuantity = (id: string, quantity: number) => {
+        // Для транспортних засобів не потрібно оновлювати кількість
     };
 
     return (
@@ -66,11 +82,14 @@ const VehiclesTab: FC = () => {
             <div className="space-y-4">
                 <AnimatePresence mode="popLayout">
                     {detailedVehicleItems.map((item) => (
-                        <CartItemComponent 
-                            key={item.id} 
-                            item={item} 
+                        <VehicleTabItem
+                            key={item.id}
+                            item={item}
                             fullDetails={item.fullDetails}
                             onDetailsClick={handleDetailsClick}
+                            onUpdateQuantity={handleUpdateQuantity}
+                            onRemove={() => handleRemove(item.id)}
+                            onUpdateClientDescription={(description) => updateVehicleDescription(item.id, description)}
                         />
                     ))}
                 </AnimatePresence>
@@ -94,6 +113,5 @@ const VehiclesTab: FC = () => {
         </motion.div>
     );
 };
-
 
 export default VehiclesTab; 

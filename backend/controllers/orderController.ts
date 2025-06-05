@@ -85,4 +85,56 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
     res.status(500).json({ message: 'Failed to create order', error });
     return; // Ensure explicit return after sending response
   }
+};
+
+// @desc    Get user orders
+// @route   GET /api/orders/me
+// @access  Private
+export const getUserOrders = async (req: Request, res: Response): Promise<void> => {
+  // Assuming user ID is available from authenticated request (req.user as any)
+  const userId = (req as any).user?._id;
+
+  if (!userId) {
+    // Should not happen if protect middleware works, but as a fallback
+    res.status(401).json({ message: 'User not authenticated' });
+    return;
+  }
+
+  try {
+    // Find orders for the user and select only necessary fields
+    const orders = await Order.find({ user: userId }).select('eventType eventDate generalDescription totalPrice status createdAt').sort('-createdAt');
+
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error('Error fetching user orders:', error);
+    res.status(500).json({ message: 'Failed to fetch user orders' });
+  }
+};
+
+export const getOrderDetails = async (req: Request, res: Response) => {
+    try {
+        const orderId = req.params.id;
+        const userId = req.user?._id;
+
+        if (!userId) {
+            res.status(401).json({ message: 'User not authenticated' });
+            return;
+        }
+
+        const order = await Order.findOne({ _id: orderId, user: userId })
+            .populate('venues.serviceId')
+            .populate('food.serviceId')
+            .populate('animators.serviceId')
+            .populate('vehicles.serviceId');
+
+        if (!order) {
+            res.status(404).json({ message: 'Order not found' });
+            return;
+        }
+
+        res.status(200).json(order);
+    } catch (error) {
+        console.error('Error in getOrderDetails:', error);
+        res.status(500).json({ message: 'Error fetching order details' });
+    }
 }; 

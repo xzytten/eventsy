@@ -51,4 +51,51 @@ export const cartService = {
             throw error;
         }
     }
+};
+
+export const getUserOrders = async (): Promise<any[]> => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await fetch(`${API_URL}/orders/me`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to fetch user orders');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching user orders:', error);
+        throw error;
+    }
+};
+
+export const getOrderDetails = async (orderId: string): Promise<any> => {
+    try {
+        const response = await fetch(`${API_URL}/orders/${orderId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch order details');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching order details:', error);
+        throw error;
+    }
 }; 

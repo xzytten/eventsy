@@ -15,42 +15,111 @@ export interface IOrder extends Document {
   eventDate: Date; // Date of the event
   generalDescription?: string; // General description for the entire order
   // Separate arrays for each service category
-  venues?: IServiceItem[];
-  food?: IServiceItem[];
-  animators?: IServiceItem[];
-  vehicles?: IServiceItem[];
-  music?: IServiceItem[];
-  beverages?: IServiceItem[];
-  photographers?: IServiceItem[];
+  venues?: Array<{
+    serviceId: mongoose.Types.ObjectId;
+    clientDescription?: string;
+    quantity?: number;
+    hours?: number;
+    paymentType?: 'full' | 'hourly';
+  }>;
+  food?: Array<{
+    serviceId: mongoose.Types.ObjectId;
+    clientDescription?: string;
+    quantity?: number;
+  }>;
+  animators?: Array<{
+    serviceId: mongoose.Types.ObjectId;
+    clientDescription?: string;
+    quantity?: number;
+    hours?: number;
+    paymentType?: 'full' | 'hourly';
+  }>;
+  vehicles?: Array<{
+    serviceId: mongoose.Types.ObjectId;
+    clientDescription?: string;
+    quantity?: number;
+    hours?: number;
+    paymentType?: 'full' | 'hourly';
+  }>;
+  music?: Array<{
+    serviceId: mongoose.Types.ObjectId;
+    clientDescription?: string;
+    quantity?: number;
+  }>;
+  beverages?: Array<{
+    serviceId: mongoose.Types.ObjectId;
+    clientDescription?: string;
+    quantity?: number;
+  }>;
+  photographers?: Array<{
+    serviceId: mongoose.Types.ObjectId;
+    clientDescription?: string;
+    quantity?: number;
+  }>;
   // Add other categories as needed
   createdAt: Date; // Date the order was created
   totalPrice: number; // Total price of the order (can calculate on demand or store)
+  status: string; // Status of the order
 }
-
-const ServiceItemSchema: Schema = new Schema({
-  serviceId: { type: mongoose.Types.ObjectId, required: true },
-  clientDescription: { type: String },
-  quantity: { type: Number },
-  hours: { type: Number },
-  paymentType: { type: String },
-});
 
 const OrderSchema: Schema = new Schema({
   user: { type: mongoose.Types.ObjectId, ref: 'User', required: true },
   eventType: { type: String, required: true },
   eventDate: { type: Date, required: true },
   generalDescription: { type: String },
-  // Separate arrays for each service category using the ServiceItemSchema
-  venues: [ServiceItemSchema],
-  food: [ServiceItemSchema],
-  animators: [ServiceItemSchema],
-  vehicles: [ServiceItemSchema],
-  music: [ServiceItemSchema],
-  beverages: [ServiceItemSchema],
-  photographers: [ServiceItemSchema],
+  // Separate arrays for each service category
+  venues: [{
+    serviceId: { type: mongoose.Types.ObjectId, ref: 'Venue', required: true },
+    clientDescription: { type: String },
+    quantity: { type: Number },
+    hours: { type: Number },
+    paymentType: { type: String },
+  }],
+  food: [{
+    serviceId: { type: mongoose.Types.ObjectId, ref: 'Food', required: true },
+    clientDescription: { type: String },
+    quantity: { type: Number },
+  }],
+  animators: [{
+    serviceId: { type: mongoose.Types.ObjectId, ref: 'Animator', required: true },
+    clientDescription: { type: String },
+    quantity: { type: Number },
+    hours: { type: Number },
+    paymentType: { type: String },
+  }],
+  vehicles: [{
+    serviceId: { type: mongoose.Types.ObjectId, ref: 'Vehicle', required: true },
+    clientDescription: { type: String },
+    quantity: { type: Number },
+    hours: { type: Number },
+    paymentType: { type: String },
+  }],
+  music: [{
+    serviceId: { type: mongoose.Types.ObjectId, ref: 'Music', required: true },
+    clientDescription: { type: String },
+    quantity: { type: Number },
+  }],
+  beverages: [{
+    serviceId: { type: mongoose.Types.ObjectId, ref: 'Beverage', required: true },
+    clientDescription: { type: String },
+    quantity: { type: Number },
+  }],
+  photographers: [{
+    serviceId: { type: mongoose.Types.ObjectId, ref: 'Photographer', required: true },
+    clientDescription: { type: String },
+    quantity: { type: Number },
+  }],
   // Add other categories as needed
   createdAt: { type: Date, default: Date.now },
   totalPrice: { type: Number, required: true },
+  status: {
+    type: String,
+    required: true,
+    enum: ['pending', 'confirmed', 'rejected', 'closed'],
+    default: 'pending',
+  },
+}, {
+  timestamps: true,
 });
 
 const Order = mongoose.model<IOrder>('Order', OrderSchema);

@@ -1,4 +1,4 @@
-import { type FC } from 'react';
+import { type FC, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useServiceStore } from '@/store/serviceStore';
 import { useUserStore } from '@/store/userStore';
@@ -6,19 +6,20 @@ import { toast } from 'react-hot-toast';
 import { type EventType } from '@/types/services';
 import CustomDatePicker from '@/components/DataPicker/CustomDatePicker';
 import { EVENT_TYPE_NAMES } from '@/constants/types';
+import { submitOrder } from '@/utils/orderUtils';
 
 const CheckoutTab: FC = () => {
-    const { 
-        generalDescription, 
-        updateGeneralDescription, 
-        getTotalPrice, 
-        eventType, 
-        venue, 
-        eventDate, 
-        setEventDate 
+    const {
+        generalDescription,
+        updateGeneralDescription,
+        getTotalPrice,
+        eventType,
+        venue,
+        eventDate,
+        setEventDate
     } = useServiceStore();
     const { isAuthenticated } = useUserStore();
-    console.log("eventType", eventType);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Calculate minimum date (2 days from now)
     const minDate = new Date();
@@ -36,16 +37,33 @@ const CheckoutTab: FC = () => {
         }
 
         try {
-            // TODO: Тут буде логіка відправки замовлення на сервер
-            console.log('Оформлення замовлення:', {
-                eventType,
-                venue,
-                eventDate,
-                generalDescription
-            });
-            toast.success('Замовлення успішно оформлено (імітація)');
+            setIsSubmitting(true);
+            const total = getTotalPrice();
+            const result = await submitOrder(total);
+            console.log(result)
+            // Очищаємо дані з localStorage
+            localStorage.removeItem('active_step');
+            localStorage.removeItem('animator-storage');
+            localStorage.removeItem('eventsy_event_type');
+            localStorage.removeItem('food-storage');
+            localStorage.removeItem('vehicle-storage');
+            localStorage.removeItem('venue-storage');
+            localStorage.removeItem('eventsy_event_date');
+            localStorage.removeItem('eventsy_general_description');
+            // Також очищаємо старі/дублюючі ключі на всяк випадок
+            localStorage.removeItem('cart-description');
+            localStorage.removeItem('event-date');
+            
+            // Встановлюємо прапорець для сторінки успіху
+            sessionStorage.setItem('fromCheckout', 'true');
+            
+            // Перенаправляємо на сторінку успіху
+            window.location.href = '/order-success';
         } catch (error) {
-            toast.error('Помилка при оформленні замовлення');
+            console.error('Error submitting order:', error);
+            toast.error(error instanceof Error ? error.message : 'Помилка при оформленні замовлення');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -102,10 +120,10 @@ const CheckoutTab: FC = () => {
 
             <button
                 onClick={handleCheckout}
+                disabled={!eventDate || isSubmitting}
                 className="w-full bg-coral text-white py-3 rounded-lg text-lg font-medium hover:bg-coral/90 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={!eventDate}
             >
-                Оформити замовлення
+                {isSubmitting ? 'Обробка замовлення...' : 'Оформити замовлення'}
             </button>
         </motion.div>
     );

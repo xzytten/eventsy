@@ -45,11 +45,28 @@ const loadGeneralDescriptionFromLocalStorage = (): string => {
     return localStorage.getItem('cart-description') || '';
 };
 
+// Функція для завантаження eventDate з localStorage (зберігається як YYYY-MM-DD)
+const loadEventDateFromLocalStorage = (): Date | null => {
+    if (typeof window === 'undefined') return null;
+    const savedDateString = localStorage.getItem('event-date');
+    if (savedDateString) {
+        // Парсимо рядок YYYY-MM-DD. Це створить дату опівночі в UTC
+        const date = new Date(savedDateString);
+        // Перевіряємо, чи дата валідна. isNaN(date.getTime()) - найнадійніший спосіб перевірки валідності дати в JS
+        if (!isNaN(date.getTime())) {
+             // Щоб отримати локальну дату без зміщення часу, створюємо нову дату з компонентів UTC дати.
+             // Це створює дату 00:00:00 локального часу для цього дня.
+            return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+        }
+    }
+    return null;
+};
+
 const useServiceStore = create<ServiceState>((set, get) => ({
     // Ініціалізуємо eventType та generalDescription з localStorage
     eventType: loadEventTypeFromLocalStorage(),
     venue: null,
-    eventDate: null,
+    eventDate: loadEventDateFromLocalStorage(), // Ініціалізуємо дату з localStorage
     generalDescription: loadGeneralDescriptionFromLocalStorage(),
 
     setEventType: (type: EventType | null) => {
@@ -72,7 +89,19 @@ const useServiceStore = create<ServiceState>((set, get) => ({
         // console.log('setEventType: Service store state after update:', get());
     },
     setVenue: (venueId: string | null) => set({ venue: venueId }),
-    setEventDate: (date: Date | null) => set({ eventDate: date }),
+    setEventDate: (date: Date | null) => {
+        set({ eventDate: date });
+        // Зберігаємо дату в localStorage як рядок YYYY-MM-DD локального часу
+        if (date) {
+             const year = date.getFullYear();
+             const month = String(date.getMonth() + 1).padStart(2, '0'); // Місяці від 0 до 11
+             const day = String(date.getDate()).padStart(2, '0');
+             const dateString = `${year}-${month}-${day}`;
+            localStorage.setItem('event-date', dateString);
+        } else {
+            localStorage.removeItem('event-date');
+        }
+    },
     updateGeneralDescription: (description: string) => {
         set({ generalDescription: description });
         // Зберігаємо generalDescription в localStorage вручну
@@ -127,7 +156,7 @@ const useServiceStore = create<ServiceState>((set, get) => ({
     resetServiceState: () => set({
         eventType: loadEventTypeFromLocalStorage(), // Зберігаємо eventType при скиданні
         venue: null,
-        eventDate: null,
+        eventDate: loadEventDateFromLocalStorage(), // Зберігаємо дату при скиданні
         generalDescription: loadGeneralDescriptionFromLocalStorage(), // Зберігаємо generalDescription при скиданні
     }),
 }));

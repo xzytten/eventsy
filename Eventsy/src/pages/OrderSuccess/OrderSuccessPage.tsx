@@ -1,19 +1,18 @@
 import { type FC } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle2, Clock, ArrowRight } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 
 const OrderSuccessPage: FC = () => {
-    const navigate = useNavigate();
-    const location = useLocation();
-
     useEffect(() => {
         // Перевіряємо, чи користувач прийшов зі сторінки оформлення замовлення
-        if (!location.state?.fromCheckout) {
-            navigate('/home');
+        const fromCheckout = sessionStorage.getItem('fromCheckout');
+        if (!fromCheckout) {
+            window.location.href = '/home';
         }
-    }, [location.state, navigate]);
+        // Очищаємо прапорець після перевірки
+        sessionStorage.removeItem('fromCheckout');
+    }, []);
 
     return (
         <div className="max-h-screen flex items-center justify-center bg-background px-4">
@@ -71,7 +70,7 @@ const OrderSuccessPage: FC = () => {
                     transition={{ delay: 0.6 }}
                 >
                     <button
-                        onClick={() => navigate('/home')}
+                        onClick={() => window.location.href = '/home'}
                         className="inline-flex items-center gap-2 bg-coral text-white px-6 py-3 rounded-lg hover:bg-coral/90 transition-colors cursor-pointer"
                     >
                         Повернутися на головну

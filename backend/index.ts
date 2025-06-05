@@ -8,6 +8,7 @@ import vehicleRouter from './routes/vehicleRoutes';
 import foodRouter from './routes/foodRoutes';
 import animatorRouter from './routes/animatorRoutes';
 import beverageRouter from './routes/beverageRoutes';
+import orderRouter from './routes/orderRoutes';
 
 dotenv.config();
 console.log('DOTENV_CONFIG: Variables loaded:', Object.keys(process.env).length > 0 ? 'Yes' : 'No', '(Count:', Object.keys(process.env).length, ')');
@@ -29,6 +30,7 @@ app.use('/api/vehicle', vehicleRouter);
 app.use('/api/food', foodRouter);
 app.use('/api/animator', animatorRouter);
 app.use('/api/beverage', beverageRouter);
+app.use('/api/orders', orderRouter);
 
 
 

@@ -55,12 +55,15 @@ const AnimatorTabItem: FC<CartItemComponentProps> = ({
     const isInView = useInView(ref, { once: true, margin: "100px" });
     const [openDescriptionId, setOpenDescriptionId] = useState<string | null>(null);
     const updateAnimatorDescription = useAnimatorStore(state => state.updateAnimatorDescription);
+    const updateAnimatorPaymentType = useAnimatorStore(state => state.updateAnimatorPaymentType);
+    const updateAnimatorHours = useAnimatorStore(state => state.updateAnimatorHours);
+    const removeAnimator = useAnimatorStore(state => state.removeAnimator);
     const selectedAnimators = useAnimatorStore(state => state.selectedAnimators);
     const currentAnimator = selectedAnimators.find(a => a._id === item.id);
-    const [editingClientDescription, setEditingClientDescription] = useState<{ id: string | null, value: string, isFocused: boolean }>({ 
-        id: null, 
-        value: item.clientDescription || '', 
-        isFocused: false 
+    const [editingClientDescription, setEditingClientDescription] = useState<{ id: string | null, value: string, isFocused: boolean }>({
+        id: null,
+        value: item.clientDescription || '',
+        isFocused: false
     });
 
     useEffect(() => {
@@ -69,6 +72,33 @@ const AnimatorTabItem: FC<CartItemComponentProps> = ({
             value: item.clientDescription || ''
         }));
     }, [item.clientDescription]);
+
+    const handleRemove = () => {
+        if (item.id) {
+            removeAnimator(item.id);
+            if (onRemove) {
+                onRemove();
+            }
+        }
+    };
+
+    const handlePaymentTypeChange = (paymentType: 'full' | 'hourly') => {
+        if (item.id) {
+            updateAnimatorPaymentType(item.id, paymentType);
+            if (onUpdatePaymentType) {
+                onUpdatePaymentType(paymentType);
+            }
+        }
+    };
+
+    const handleHoursChange = (hours: number) => {
+        if (item.id) {
+            updateAnimatorHours(item.id, hours);
+            if (onUpdateQuantity) {
+                onUpdateQuantity(item.id, hours);
+            }
+        }
+    };
 
     const imageUrl = fullDetails && 'images' in fullDetails && fullDetails.images?.[0] || item.image || '/placeholder-service.jpg';
     const itemTitle = fullDetails && 'name' in fullDetails ? fullDetails.name : item.title;
@@ -114,7 +144,7 @@ const AnimatorTabItem: FC<CartItemComponentProps> = ({
                     </button>
                 </div>
                 <button
-                    onClick={onRemove}
+                    onClick={handleRemove}
                     className="p-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
                 >
                     <Trash2 size={20} className="text-red-500" />
@@ -153,42 +183,53 @@ const AnimatorTabItem: FC<CartItemComponentProps> = ({
                     </div>
                 )}
 
-                <div className="flex gap-4">
-                    <button
-                        onClick={() => onUpdatePaymentType?.('full')}
-                        className={`flex-1 py-2 px-4 rounded-lg transition-colors cursor-pointer ${item.paymentType === 'full'
-                                ? 'bg-coral text-white'
-                                : 'bg-black-30 text-muted hover:bg-white/5'
-                            }`}
-                    >
-                        На весь день
-                    </button>
-                    <button
-                        onClick={() => onUpdatePaymentType?.('hourly')}
-                        className={`flex-1 py-2 px-4 rounded-lg transition-colors cursor-pointer ${item.paymentType === 'hourly'
-                                ? 'bg-coral text-white'
-                                : 'bg-black-30 text-muted hover:bg-white/5'
-                            }`}
-                    >
-                        Погодинно
-                    </button>
-                </div>
+                {currentAnimator && (
+                    <>
+                        {currentAnimator.pricePerHour && currentAnimator.pricePerDay ? (
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => handlePaymentTypeChange('full')}
+                                    className={`flex-1 py-2 px-4 rounded-lg transition-colors cursor-pointer ${item.paymentType === 'full'
+                                        ? 'bg-coral text-white'
+                                        : 'bg-black-30 text-muted hover:bg-white/5'
+                                        }`}
+                                >
+                                    На весь день
+                                </button>
+                                <button
+                                    onClick={() => handlePaymentTypeChange('hourly')}
+                                    className={`flex-1 py-2 px-4 rounded-lg transition-colors cursor-pointer ${item.paymentType === 'hourly'
+                                        ? 'bg-coral text-white'
+                                        : 'bg-black-30 text-muted hover:bg-white/5'
+                                        }`}
+                                >
+                                    Погодинно
+                                </button>
+                            </div>
+                        ) : currentAnimator.pricePerHour ? (
+                            <div className="text-muted mb-2">Оплата погодинно</div>
+                        ) : (
+                            <div className="text-muted mb-2">Оплата за весь день</div>
+                        )}
+                    </>
+                )}
 
-                {item.paymentType === 'hourly' && (
+                {item.paymentType === 'hourly' && currentAnimator?.pricePerHour && (
                     <div className="flex items-center gap-4">
                         <span className="text-muted">Кількість годин:</span>
                         <div className="flex items-center gap-3">
                             <button
-                                onClick={() => onUpdateQuantity?.(item.id, (item.quantity || 1) - 1)}
-                                disabled={(item.quantity || 1) <= 1}
+                                onClick={() => handleHoursChange((item.hours || 1) - 1)}
+                                disabled={(item.hours || 1) <= 1}
                                 className="p-2 hover:bg-white/5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                             >
                                 <Minus size={20} />
                             </button>
-                            <span className="text-lg">{item.quantity || 1}</span>
+                            <span className="text-lg">{item.hours || 1}</span>
                             <button
-                                onClick={() => onUpdateQuantity?.(item.id, (item.quantity || 1) + 1)}
-                                className="p-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+                                onClick={() => handleHoursChange((item.hours || 1) + 1)}
+                                disabled={(item.hours || 1) >= 14}
+                                className="p-2 hover:bg-white/5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                             >
                                 <Plus size={20} />
                             </button>
@@ -207,9 +248,9 @@ const AnimatorTabItem: FC<CartItemComponentProps> = ({
 
             <div className="flex justify-end">
                 <span className="text-xl font-medium text-coral">
-                    {item.paymentType === 'hourly' && item.hours && item.hourlyPrice
-                        ? `${(item.hourlyPrice) * (item.hours)} ₴`
-                        : `${item.price} ₴`}
+                    {item.paymentType === 'hourly' && currentAnimator?.pricePerHour
+                        ? `${(currentAnimator.pricePerHour) * (item.hours || 1)} ₴`
+                        : `${currentAnimator?.pricePerDay || item.price} ₴`}
                 </span>
             </div>
         </motion.div>

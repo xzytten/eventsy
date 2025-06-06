@@ -98,4 +98,29 @@ export const getOrderDetails = async (orderId: string): Promise<any> => {
         console.error('Error fetching order details:', error);
         throw error;
     }
+};
+
+export const getAllOrders = async (): Promise<any[]> => {
+    try {
+        const response = await fetch(`${API_URL}/orders/all`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+
+        if (!response.ok) {
+            // Handle specific admin unauthorized/forbidden case if needed
+            if (response.status === 403) {
+                throw new Error('You do not have administrative privileges.');
+            }
+            throw new Error('Failed to fetch all orders');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching all orders:', error);
+        throw error;
+    }
 }; 

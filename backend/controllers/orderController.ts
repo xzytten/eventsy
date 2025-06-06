@@ -137,4 +137,16 @@ export const getOrderDetails = async (req: Request, res: Response) => {
         console.error('Error in getOrderDetails:', error);
         res.status(500).json({ message: 'Error fetching order details' });
     }
+};
+
+// @access  Private/Admin
+export const getAllOrders = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const orders = await Order.find({})
+            .populate('user', 'name email'); // Populate user name and email
+        res.status(200).json(orders);
+    } catch (error) {
+        console.error('Error fetching all orders:', error);
+        res.status(500).json({ message: 'Failed to fetch all orders' });
+    }
 }; 

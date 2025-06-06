@@ -7,14 +7,18 @@ import {
     MessageCircle,
     UserCircle,
     ShoppingCart,
-    ListOrdered
+    ListOrdered,
+    Shield
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import NavOutlinedButton from '../NavOutlinedButton/NavOutlinedButton';
 
 const Header: FC = () => {
-    const { isAuthenticated } = useUserStore();
+    const { user, isAuthenticated } = useUserStore();
     const location = useLocation();
+    
+    const isAdmin = isAuthenticated && user?.role === 'admin';
+
     return (
         <header >
             <nav className="container mx-auto px-4 py-4">
@@ -42,6 +46,12 @@ const Header: FC = () => {
                         </NavOutlinedButton>
                         {isAuthenticated ? (
                             <>
+                                {isAdmin && (
+                                     <NavOutlinedButton to="/admin" icon={<Shield size={18} />}>
+                                        Всі замовлення
+                                    </NavOutlinedButton>
+                                )}
+
                                 <NavOutlinedButton to="/chat" icon={<MessageCircle size={18} />}>
                                     Чат
                                 </NavOutlinedButton>

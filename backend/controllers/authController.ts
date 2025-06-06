@@ -4,12 +4,50 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
-dotenv.config(); // Обов’язково на самому початку
+dotenv.config(); // Обов'язково на самому початку
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
     throw new Error('JWT_SECRET is not defined in environment variables');
 }
+
+// ---------- TEMPORARY Admin Registration ----------
+// // WARNING: This endpoint should be COMMENT after creating the initial admin user.
+// export const createAdminUser = async (req: Request, res: Response): Promise<void> => {
+//     const { email, password, name } = req.body;
+//     console.log(req.body)
+//     if (!email || !password || !name) {
+//         res.status(400).json({ message: 'Введіть email, пароль та ім\'я' });
+//         return;
+//     }
+
+//     try {
+//         const existingUser = await User.findOne({ email });
+//         if (existingUser) {
+//             res.status(409).json({ message: 'Користувач з таким email вже існує' });
+//             return;
+//         }
+
+//         const saltRounds = 10;
+//         const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+//         // Create user with admin role
+//         const newUser = await User.create({ email, password: hashedPassword, name, role: 'admin' });
+
+//         res.status(201).json({
+//             message: 'Адміністратор зареєстрований',
+//             user: {
+//                 _id: newUser._id,
+//                 email: newUser.email,
+//                 name: newUser.name,
+//                 role: newUser.role
+//             }
+//         });
+//     } catch (error) {
+//         console.error('Admin registration error:', error);
+//         res.status(500).json({ message: 'Помилка сервера при реєстрації адміністратора' });
+//     }
+// };
 
 // ---------- Registration ----------
 export const registerUser = async (req: Request, res: Response): Promise<void> => {
@@ -74,7 +112,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
             user: {
                 _id: user._id,
                 email: user.email,
-                name: user.name
+                name: user.name,
+                role: user.role
             }
         });
     } catch (error) {
@@ -104,6 +143,7 @@ export const verifyToken = async (req: Request, res: Response): Promise<void> =>
         }
 
         const userId = decodedToken.userId;
+        // Fetch user including the role
         const user = await User.findById(userId);
 
         if (!user) {
@@ -111,7 +151,15 @@ export const verifyToken = async (req: Request, res: Response): Promise<void> =>
             return;
         }
 
-        res.status(200).json({ user: { _id: user._id, email: user.email, name: user.name } });
+        // Return user data including role
+        res.status(200).json({ 
+            user: { 
+                _id: user._id, 
+                email: user.email, 
+                name: user.name,
+                role: user.role // Include role in the response
+            }
+        });
     } catch (error) {
         console.error('Verify token error:', error);
         res.status(500).json({ message: 'Помилка сервера під час перевірки токена' });

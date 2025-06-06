@@ -147,7 +147,7 @@ const OrderDetailsModal: FC<OrderDetailsModalProps> = ({ isOpen, onClose, order 
                                     className={`px-4 py-2 rounded-lg text-left ${activeCategory === cat.key ? 'bg-primary text-black' : 'bg-black-40 text-muted hover:bg-black-50'}`}
                                     onClick={() => setActiveCategory(cat.key as any)}
                                 >
-                                    {cat.label} ({order[cat.key as keyof IOrder]!.length})
+                                    {/* {cat.label} ({order[cat.key as keyof IOrder]!.length}) */}
                                 </button>
                             ))}
                         </div>

@@ -16,6 +16,7 @@ import CartPage from '@/pages/Cart/CartPage';
 import OrderSuccessPage from '@/pages/OrderSuccess/OrderSuccessPage';
 import StepOrderPage from '@/pages/StepOrder/StepOrderPage';
 import PageLayout from '@/layouts/PageLayout';
+import AdminPanelPage from '@/pages/AdminPanel/AdminPanelPage';
 
 export const router = createBrowserRouter([
     {
@@ -112,6 +113,14 @@ export const router = createBrowserRouter([
                         )
                     }
                 ]
+            },
+            {
+                path: 'admin',
+                element: (
+                    <ProtectedRoute requiredRole="admin">
+                        <AdminPanelPage />
+                    </ProtectedRoute>
+                )
             },
             {
                 path: '*',

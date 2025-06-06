@@ -5,10 +5,11 @@ import { useUserStore } from '@/store/userStore';
 interface ProtectedRouteProps {
     children: React.ReactNode;
     requireAuth?: boolean;
+    requiredRole?: 'user' | 'admin';
 }
 
-export const ProtectedRoute: FC<ProtectedRouteProps> = ({ children, requireAuth = true }) => {
-    const { isAuthenticated, isInitializing } = useUserStore();
+export const ProtectedRoute: FC<ProtectedRouteProps> = ({ children, requireAuth = true, requiredRole }) => {
+    const { user, isAuthenticated, isInitializing } = useUserStore();
     const location = useLocation();
 
     // Показуємо екран завантаження, поки стор ініціалізується
@@ -22,10 +23,20 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({ children, requireAuth 
         return <Navigate to="/auth/login" state={{ from: location }} replace />;
     }
 
-    // Якщо користувач авторизований і намагається зайти на сторінки auth
-    if (isAuthenticated && location.pathname.startsWith('/auth')) {
+    // Якщо потрібна конкретна роль і користувач не має цієї ролі
+    if (requiredRole && (!isAuthenticated || user?.role !== requiredRole)) {
+        // Redirect, можливо, на сторінку 403 Forbidden або головну
+        // TODO: Додати сторінку 403
+        return <Navigate to="/" replace />;
+    }
+
+    // Якщо користувач авторизований і намагається зайти на сторінки auth (тільки якщо requireAuth === false або requiredRole не вказано)
+    // Ця умова має бути після перевірки requiredRole
+    if (isAuthenticated && location.pathname.startsWith('/auth') && requireAuth && !requiredRole) {
         return <Navigate to="/home" replace />;
     }
 
     return <>{children}</>;
-}; 
+};
+
+export default ProtectedRoute; 

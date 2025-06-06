@@ -1,6 +1,5 @@
-import { type FC, useEffect, useState } from 'react';
+import { type FC, useState } from 'react';
 import { Users, Camera, Car, MapPin, Utensils } from 'lucide-react';
-import { useServiceStore } from '@/store/serviceStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnimatorList } from '@/components/Animator/AnimatorList';
 import { VenueList } from '@/components/Venue/VenueList';
@@ -9,16 +8,11 @@ import { VehicleList } from '@/components/Vehicle/VehicleList';
 import ServiceFilters from '@/components/Services/ServiceFilters';
 
 const ServicesPage: FC = () => {
-    const { currentStep, setCurrentStep } = useServiceStore();
+    const [currentStep, setCurrentStep] = useState(0);
     const [selectedEventTypes, setSelectedEventTypes] = useState<string[]>([]);
     const [priceRange, setPriceRange] = useState({ min: 0, max: 10000 });
     const [isHourly, setIsHourly] = useState(false);
     const [maxAvailablePrice, setMaxAvailablePrice] = useState(10000);
-
-    // Встановлюємо початкову категорію при монтуванні компонента
-    useEffect(() => {
-        setCurrentStep(0);
-    }, []);
 
     const handleMaxPriceChange = (newMax: number) => {
         if (newMax !== maxAvailablePrice) {
@@ -27,7 +21,6 @@ const ServicesPage: FC = () => {
     };
 
     const handlePriceRangeChange = (newRange: { min: number; max: number }) => {
-        // Обмежуємо максимальне значення
         setPriceRange({
             min: newRange.min,
             max: Math.min(newRange.max, maxAvailablePrice)
@@ -45,8 +38,6 @@ const ServicesPage: FC = () => {
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="flex gap-8">
-
-                {/* Бокове меню */}
                 <div className="w-64 shrink-0 sticky top-4 h-fit flex flex-col gap-4">
                     <motion.div
                         className="bg-black-30 rounded-xl p-4 space-y-2"
@@ -103,8 +94,6 @@ const ServicesPage: FC = () => {
                         />
                     </motion.div>
                 </div>
-
-                {/* Основний контент */}
                 <div className="flex-1">
                     <AnimatePresence mode="wait">
                         {currentStep === 0 && (

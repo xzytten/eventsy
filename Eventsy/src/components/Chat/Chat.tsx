@@ -27,8 +27,10 @@ type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'reconnect
 interface ChatProps {
     onUpdateAdminChats?: (chats: ChatItem[]) => void;
     selectedChatId?: string | null;
+    searchText?: string;
+    currentSelectedChat?: ChatItem;
 }
-const Chat: React.FC<ChatProps> = ({onUpdateAdminChats, selectedChatId}) => {
+const Chat: React.FC<ChatProps> = ({onUpdateAdminChats, selectedChatId, searchText, currentSelectedChat}) => {
     const user = useUserStore((state) => state.user)
 
     const [inputMessage, setInputMessage] = useState<string>('');
@@ -88,6 +90,7 @@ const Chat: React.FC<ChatProps> = ({onUpdateAdminChats, selectedChatId}) => {
             console.error('WebSocket error:', error);
         },
         selectedChatId,
+        searchText
     });
 
     useEffect(() => {
@@ -119,28 +122,6 @@ const Chat: React.FC<ChatProps> = ({onUpdateAdminChats, selectedChatId}) => {
     //         if (disconnect) disconnect();
     //     }
     // }, [disconnect])
-
-    // Auto-join when username is available
-    // useEffect(() => {
-    //     if (username && !isJoined) {
-    //         connect();
-    //     }
-    // }, [username, isJoined, connect]);
-
-    // const leaveChat = (): void => {
-    //     if (ws.current?.readyState === WebSocket.OPEN) {
-    //         ws.current.send(JSON.stringify({
-    //             type: 'leave',
-    //             username: username,
-    //             timestamp: new Date().toISOString()
-    //         }));
-    //     }
-    //
-    //     disconnect();
-    //     setIsJoined(false);
-    //     clearMessages();
-    //     // setOnlineUsers(0);
-    // };
 
     const sendMessage = (): void => {
         if (!inputMessage.trim() || !isConnected) return;
@@ -193,24 +174,28 @@ const Chat: React.FC<ChatProps> = ({onUpdateAdminChats, selectedChatId}) => {
                         {isConnected ? <Wifi className={getStatusColor()} size={16} /> : <WifiOff className={getStatusColor()} size={16} />}
                         <span className={getStatusColor()}>{getStatusText()}</span>
                     </div>
+                    {
+                        currentSelectedChat && (
+                            <div>
+                                {currentSelectedChat.userEmail}
+                            </div>
+                        )
+                    }
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 text-sm text-gray-200">
-                        <Users size={16} />
-                        <span>{onlineUsers} online</span>
-                    </div>
-
-                    <div className="text-sm text-gray-300">
-                        {username}
-                    </div>
-
-                    <button
-                        onClick={() => {}}
-                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition-colors"
-                    >
-                        Leave
-                    </button>
+                    {
+                        user?.role === 'admin' ? (
+                            <div className="flex items-center gap-2 text-sm text-gray-200">
+                                <Users size={16} />
+                                <span>{onlineUsers} online</span>
+                            </div>
+                        ) : (
+                            <div className="text-sm text-gray-300">
+                                {username}
+                            </div>
+                        )
+                    }
                 </div>
             </div>
 

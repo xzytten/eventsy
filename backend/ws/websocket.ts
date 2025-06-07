@@ -216,7 +216,7 @@ export class StandaloneWebSocketChatServer {
                 this.handleChangeAdminChat(clientId, message)
                 break;
             case 'chats_info':
-                this.handleUpdateChatsInfo(clientId)
+                this.handleUpdateChatsInfo(clientId, message)
                 break;
             default:
                 this.sendError(clientId, `Unknown message type: ${message.type}`);
@@ -259,7 +259,7 @@ export class StandaloneWebSocketChatServer {
         console.log(chat);
 
         if (client.role === 'admin') {
-            this.sendAdminAllChatsInfo(clientId);
+            this.sendAdminAllChatsInfo(clientId, null);
         } else {
             if (!chat) throw new Error('Chat not found');
 
@@ -359,8 +359,8 @@ export class StandaloneWebSocketChatServer {
         } else throw new Error('Chat not found');
     }
 
-    private handleUpdateChatsInfo(adminId: string) {
-        this.sendAdminAllChatsInfo(adminId);
+    private handleUpdateChatsInfo(adminId: string, message: ChatMessage) {
+        this.sendAdminAllChatsInfo(adminId, message.text ? message.text.toLowerCase() : null);
     }
 
     private handleClientDisconnect(clientId: string): void {
@@ -441,13 +441,23 @@ export class StandaloneWebSocketChatServer {
         }
     }
 
-    private async sendAdminAllChatsInfo(adminId: string): Promise<boolean> {
+    private async sendAdminAllChatsInfo(adminId: string, searchString: string | null): Promise<boolean> {
         const admin = this.clients.get(adminId);
         if (!admin || admin.ws.readyState !== WebSocket.OPEN) return false;
 
         try {
-            const chats = await Chat.find().sort({ timestamp: -1 });
-            console.log(chats);
+            let chats;
+            if (searchString) {
+                const users = await User.find({
+                    $or: [
+                        { email: { $regex: searchString, $options: 'i' } },
+                        { name: { $regex: searchString, $options: 'i' } }
+                    ]
+                });
+                const userEmails = users.map(u => u.email);
+                chats = await Chat.find({participants: { $in: userEmails }}).sort({ timestamp: -1 })
+            } else chats = await Chat.find().sort({ timestamp: -1 });
+
             const chatWithLastMessages = await Promise.all(chats.map(async chat => {
                 const client = await User.findOne({email: { $in: chat.participants }})
                 const lastMessage = await Message.findOne({chatId: chat._id}).sort({ timestamp: -1 });

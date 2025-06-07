@@ -76,6 +76,8 @@ export interface UseWebSocketOptions {
     onMessage?: (data: WebSocketMessage) => void;
     onConnectionChange?: (status: ConnectionStatus) => void;
     onError?: (error: Event) => void;
+    selectedChatId: string | null;
+    searchText: string;
 }
 
 export const useWebSocket = ({
@@ -86,7 +88,8 @@ export const useWebSocket = ({
                                  onMessage,
                                  onConnectionChange,
                                  onError,
-                                 selectedChatId
+                                 selectedChatId,
+                                 searchText
                              }: UseWebSocketOptions): UseWebSocketReturn => {
     // State
     const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -308,17 +311,29 @@ export const useWebSocket = ({
         };
     }, [clearReconnectTimeout]);
 
+
+    // update chats for admin each 5 seconds automatically
     useEffect(() => {
         const updateChatsInfo = setInterval(() => {
             sendMessage({
-                type: 'chats_info'
+                type: 'chats_info',
+                message: searchText === '' ? null : searchText,
             });
-        }, 10000)
+        }, 5000)
 
         return () => {
             clearInterval(updateChatsInfo);
         }
-    }, [user])
+    }, [user, searchText, sendMessage])
+
+
+    // manually update if admins' search text changes
+    useEffect(() => {
+        sendMessage({
+            type: 'chats_info',
+            text: searchText === '' ? null : searchText,
+        });
+    }, [searchText, sendMessage]);
 
     return {
         messages,

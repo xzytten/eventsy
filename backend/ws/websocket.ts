@@ -197,8 +197,6 @@ export class StandaloneWebSocketChatServer {
             return this.sendError(clientId, 'Invalid JSON format');
         }
 
-        console.log(`Message from ${clientId}:`, message);
-
         switch (message.type) {
             case 'join':
                 this.handleJoin(clientId, message);
@@ -256,8 +254,6 @@ export class StandaloneWebSocketChatServer {
 
         const chat = await this.findOrCreateChat(client);
 
-        console.log(chat);
-
         if (client.role === 'admin') {
             this.sendAdminAllChatsInfo(clientId, null);
         } else {
@@ -299,7 +295,6 @@ export class StandaloneWebSocketChatServer {
             timestamp: new Date().toISOString()
         });
 
-        console.log('[saved message]', savedMessage);
         const realClient = chat?.participants[0];
 
         // Send message to all admins

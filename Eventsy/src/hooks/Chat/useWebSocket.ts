@@ -168,7 +168,6 @@ export const useWebSocket = ({
                 break;
 
             case 'chat_history':
-                console.log('CHAT_HISTORY', data)
                 if (data.messages) {
                     setMessages(data.messages.map(m => ({
                         id: generateMessageId(),
@@ -184,7 +183,6 @@ export const useWebSocket = ({
                 break;
             case 'chats_info':
                 if (data.chats) {
-                    console.log(data.chats)
                     setAdminChats(data.chats.map(chat => ({
                         chatId: chat.id,
                         username: chat.client.name,
@@ -275,13 +273,9 @@ export const useWebSocket = ({
 
     // Send message through WebSocket
     const sendMessage = useCallback((message: any): boolean => {
-        console.log(ws.current?.readyState);
-        console.log(selectedChatId)
-
         if (ws.current?.readyState === WebSocket.OPEN) {
             try {
                 if (user?.role === 'admin') {
-                    console.log(JSON.stringify({...message, chatId: selectedChatId}));
                     ws.current.send(JSON.stringify({...message, chatId: selectedChatId}));
                 } else {
                     ws.current.send(JSON.stringify(message));

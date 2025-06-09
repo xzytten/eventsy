@@ -11,28 +11,23 @@ const OrderSuccessPage: FC = () => {
         const fromCheckout = sessionStorage.getItem('fromCheckout');
 
         if (!fromCheckout) {
-            // Якщо прапорця немає, перенаправляємо на головну негайно
             window.location.href = '/home';
         } else {
-            // Якщо прапорець є, дозволяємо рендерити вміст
             setCanRender(true);
         }
-        // Цей ефект запускається лише один раз при монтуванні.
-    }, []); // Порожній масив залежностей
+    }, []); 
 
     // Ефект для одноразового видалення прапорця після першого рендерингу
     useEffect(() => {
         if (canRender) {
-            // Видаляємо прапорець через невелику затримку після рендерингу
             const timer = setTimeout(() => {
                 sessionStorage.removeItem('fromCheckout');
                 console.log('OrderSuccessPage: fromCheckout flag removed after delay');
-            }, 100); // Дуже коротка затримка, наприклад 100 мс
+            }, 100); 
 
-            // Очистка таймера при розмонтуванні (хоча прапорець вже буде видалено)
             return () => clearTimeout(timer);
         }
-    }, [canRender]); // Запускається, коли canRender стає true (тобто один раз після першого рендерингу з прапорцем)
+    }, [canRender]); 
 
     return (
         // Рендеримо вміст лише якщо canRender true
@@ -101,7 +96,7 @@ const OrderSuccessPage: FC = () => {
                 </motion.div>
             </motion.div>
         </div>
-        ) : null // Нічого не рендеримо, якщо доступ заборонено
+        ) : null 
     );
 };
 

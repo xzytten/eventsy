@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import Order, { IServiceItem } from '../models/Order';
+import { User } from '../models/User';
 import mongoose from 'mongoose';
 import { NextFunction } from 'express';
 
@@ -28,14 +29,11 @@ const mapToServiceItems = (items: any[] | undefined): IServiceItem[] => {
 };
 
 export const createOrder = async (req: Request, res: Response): Promise<void> => {
-  // Assuming user ID is available from authenticated request (e.g., req.user as any). You might need to adjust this based on your auth middleware.
-  // Use req.user?._id after the protect middleware has potentially attached the user.
   const userId = (req as any).user?._id;
 
   if (!userId) {
-    // The protect middleware should handle this, but adding a fallback check
     res.status(401).json({ message: 'User not authenticated or token invalid' });
-    return; // Ensure explicit return after sending response
+    return;
   }
 
   const {
@@ -78,12 +76,19 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
 
     const savedOrder = await newOrder.save();
 
+    // Add order ID to user's orders array
+    await User.findByIdAndUpdate(
+      userId,
+      { $push: { orders: savedOrder._id } },
+      { new: true }
+    );
+
     res.status(201).json(savedOrder);
-    return; // Ensure explicit return after sending response
+    return;
   } catch (error) {
     console.error('Error creating order:', error);
     res.status(500).json({ message: 'Failed to create order', error });
-    return; // Ensure explicit return after sending response
+    return;
   }
 };
 
@@ -91,18 +96,36 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
 // @route   GET /api/orders/me
 // @access  Private
 export const getUserOrders = async (req: Request, res: Response): Promise<void> => {
-  // Assuming user ID is available from authenticated request (req.user as any)
   const userId = (req as any).user?._id;
 
   if (!userId) {
-    // Should not happen if protect middleware works, but as a fallback
     res.status(401).json({ message: 'User not authenticated' });
     return;
   }
 
   try {
-    // Find orders for the user and select only necessary fields
-    const orders = await Order.find({ user: userId }).select('eventType eventDate generalDescription totalPrice status createdAt').sort('-createdAt');
+    // Get user and check if exists
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    // Get orders array from user
+    const orderIds = user.orders;
+
+    // If no orders, return empty array
+    if (!orderIds || orderIds.length === 0) {
+      res.status(200).json([]);
+      return;
+    }
+
+    // Get orders by IDs from user's orders array
+    const orders = await Order.find({
+      _id: { $in: orderIds }
+    }).select('eventType eventDate generalDescription totalPrice status createdAt')
+      .sort('-createdAt');
 
     res.status(200).json(orders);
   } catch (error) {

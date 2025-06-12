@@ -4,6 +4,7 @@ export interface IUser {
     password: string;
     name: string;
     role?: 'user' | 'admin';
+    orders?: string[];
 }
 
 

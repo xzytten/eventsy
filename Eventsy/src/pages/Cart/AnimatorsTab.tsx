@@ -1,6 +1,7 @@
 import { type FC, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAnimatorStore } from '@/store/animatorStore';
+import { useServiceStore } from '@/store/serviceStore';
 import AnimatorDetailsModal from '@/components/Animator/AnimatorDetailsModal';
 import { type IAnimator } from '@/types/animator';
 import { type CartItem } from '@/types/cart';
@@ -20,6 +21,8 @@ const AnimatorsTab: FC = () => {
     updateAnimatorDescription
   } = useAnimatorStore();
 
+  const { eventType } = useServiceStore();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAnimatorForDetails, setSelectedAnimatorForDetails] = useState<IAnimator | null>(null);
 
@@ -33,7 +36,18 @@ const AnimatorsTab: FC = () => {
     updateAnimatorDescription(animatorId, description);
   };
 
-  const detailedAnimatorItems: DetailedAnimatorCartItem[] = selectedAnimators.map(animator => ({
+  // Фільтрація аніматорів за типом події
+  const filteredSelectedAnimators = selectedAnimators.filter((animator: IAnimator) => {
+    if (eventType) {
+      const hasMatchingEventType = animator.eventTypes?.some((type) => 
+        type === eventType || type === 'ANY_EVENT'
+      );
+      return hasMatchingEventType;
+    }
+    return true;
+  });
+
+  const detailedAnimatorItems: DetailedAnimatorCartItem[] = filteredSelectedAnimators.map(animator => ({
     id: animator._id,
     title: animator.name,
     category: 'animators',

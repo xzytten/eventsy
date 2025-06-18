@@ -68,7 +68,7 @@ export const AnimatorList: FC<AnimatorListProps> = ({
     // Фільтр за типом події
     if (selectedEventTypes?.length > 0) {
       const hasMatchingEventType = animator.eventTypes?.some((type) => 
-        selectedEventTypes.includes(type as EventType)
+        selectedEventTypes.includes(type as EventType) || type === 'ANY_EVENT'
       );
       if (!hasMatchingEventType) return false;
     }

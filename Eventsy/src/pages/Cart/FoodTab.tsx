@@ -2,8 +2,10 @@ import { type FC, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import FoodTabItem from '@/components/Food/FoodTabItem';
 import useFoodStore from '@/store/foodStore';
+import { useServiceStore } from '@/store/serviceStore';
 import { type IFood } from '@/types/food';
 import { type CartItem } from '@/types/cart';
+import { type EventType } from '@/constants/types';
 import FoodDetailsModal from '@/components/Food/FoodDetailsModal';
 
 interface DetailedFoodCartItem extends CartItem {
@@ -20,6 +22,8 @@ const FoodTab: FC = () => {
         updateFoodDescription
     } = useFoodStore();
 
+    const { eventType } = useServiceStore();
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedFoodForDetails, setSelectedFoodForDetails] = useState<IFood | null>(null);
 
@@ -29,7 +33,18 @@ const FoodTab: FC = () => {
         }
     }, [availableFood.length, loadFood]);
 
-    const detailedFoodItems: DetailedFoodCartItem[] = selectedFood.map((food) => ({
+    // Фільтрація їжі за типом події
+    const filteredSelectedFood = selectedFood.filter((food: IFood) => {
+        if (eventType) {
+            const hasMatchingEventType = food.eventTypes?.some((type) => 
+                type === eventType || type === 'ANY_EVENT'
+            );
+            return hasMatchingEventType;
+        }
+        return true;
+    });
+
+    const detailedFoodItems: DetailedFoodCartItem[] = filteredSelectedFood.map((food) => ({
         id: food._id ?? '',
         title: food.name || food.type || 'Їжа',
         category: 'food',

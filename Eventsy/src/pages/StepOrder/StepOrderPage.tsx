@@ -132,32 +132,32 @@ const StepOrderPage = () => {
             {
                 id: 2,
                 title: 'Місце проведення',
-                content: <VenueList showSelectButton={true} />
+                content: <VenueList showSelectButton={true} selectedEventTypes={eventType ? [eventType] : []} />
             },
             {
                 id: 3,
                 title: 'Аніматор',
-                content: <AnimatorList showSelectButton={true} />
+                content: <AnimatorList showSelectButton={true} selectedEventTypes={eventType ? [eventType] : []} />
             },
             {
                 id: 4,
                 title: 'Фотограф',
-                content: <PhotographerList showSelectButton={true}/>
+                content: <PhotographerList showSelectButton={true} selectedEventTypes={eventType ? [eventType] : []} />
             },
             {
                 id: 5,
                 title: 'Напої',
-                content: <BeverageList showSelectButton={true} />
+                content: <BeverageList showSelectButton={true} selectedEventTypes={eventType ? [eventType] : []} />
             },
             {
                 id: 6,
                 title: 'Їжа',
-                content: <FoodList showSelectButton={true} />
+                content: <FoodList showSelectButton={true} selectedEventTypes={eventType ? [eventType] : []} />
             },
             {
                 id: 7,
                 title: 'Транспорт',
-                content: <VehicleList showSelectButton={true} />
+                content: <VehicleList showSelectButton={true} selectedEventTypes={eventType ? [eventType] : []} />
             }
         ];
         return steps;

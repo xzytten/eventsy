@@ -62,7 +62,7 @@ export const BeverageList: FC<BeverageListProps> = ({
   const filteredBeverages = availableBeverages.filter((beverage: IBeverage) => {
     if (selectedEventTypes?.length > 0) {
       const hasMatchingEventType = beverage.eventTypes?.some((type) => 
-        selectedEventTypes.includes(type as EventType)
+        selectedEventTypes.includes(type as EventType) || type === 'ANY_EVENT'
       );
       if (!hasMatchingEventType) return false;
     }

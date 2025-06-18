@@ -61,7 +61,9 @@ export const PhotographerList: FC<PhotographerListProps> = ({
 
   const filteredPhotographers = availablePhotographers.filter((p: IPhotographer) => {
     if (selectedEventTypes.length > 0) {
-      const matchesEvent = p.eventTypes.some(type => selectedEventTypes.includes(type as EventType));
+      const matchesEvent = p.eventTypes.some(type => 
+        selectedEventTypes.includes(type as EventType) || type === 'ANY_EVENT'
+      );
       if (!matchesEvent) return false;
     }
 

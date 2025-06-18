@@ -1,8 +1,10 @@
 import { type FC, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useVehicleStore } from '@/store/vehicleStore';
+import { useServiceStore } from '@/store/serviceStore';
 import { type IVehicle } from '@/types/vehicle';
 import { type CartItem } from '@/types/cart';
+import { type EventType } from '@/constants/types';
 import VehicleDetailsModal from '@/components/Vehicle/VehicleDetailsModal';
 import VehicleTabItem from '@/components/Vehicle/VehicleTabItem';
 
@@ -21,6 +23,8 @@ const VehiclesTab: FC = () => {
         updateVehiclePaymentType
     } = useVehicleStore();
 
+    const { eventType } = useServiceStore();
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedVehicleForDetails, setSelectedVehicleForDetails] = useState<IVehicle | null>(null);
 
@@ -30,7 +34,18 @@ const VehiclesTab: FC = () => {
         }
     }, [vehicles.length, loadVehicles]);
 
-    const detailedVehicleItems: DetailedVehicleCartItem[] = selectedVehicles.map(vehicle => ({
+    // Фільтрація транспортних засобів за типом події
+    const filteredSelectedVehicles = selectedVehicles.filter((vehicle: IVehicle) => {
+        if (eventType) {
+            const hasMatchingEventType = vehicle.eventTypes?.some((type) => 
+                type === eventType || type === 'ANY_EVENT'
+            );
+            return hasMatchingEventType;
+        }
+        return true;
+    });
+
+    const detailedVehicleItems: DetailedVehicleCartItem[] = filteredSelectedVehicles.map(vehicle => ({
         id: vehicle._id || '',
         title: vehicle.name,
         description: vehicle.description || '',

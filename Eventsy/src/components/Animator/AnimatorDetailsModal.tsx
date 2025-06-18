@@ -27,7 +27,6 @@ const AnimatorDetailsModal: FC<AnimatorDetailsModalProps> = ({ isOpen, onClose, 
         <p><span>Опис:</span> {animator.description || 'Немає опису'}</p>
         <p><span>Досвід:</span> {animator.experience ? `${animator.experience} років` : 'Не вказано'}</p>
         <p><span>Вік:</span> {animator.ageRange ? `${animator.ageRange.min}-${animator.ageRange.max} років` : 'Не вказано'}</p>
-        <p><span>Кількість дітей:</span> {animator.capacity ? `до ${animator.capacity}` : 'Не вказано'}</p>
         <p><span>Ціна за годину:</span> {animator.pricePerHour ? `${animator.pricePerHour} грн` : 'Не вказано'}</p>
         {animator.pricePerDay && <p><strong>Ціна за день:</strong> {animator.pricePerDay} грн</p>}
       </div>

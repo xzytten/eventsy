@@ -63,7 +63,7 @@ export const FoodList: FC<FoodListProps> = ({
     // Фільтр за типом події
     if (selectedEventTypes?.length > 0) {
       const hasMatchingEventType = food.eventTypes?.some((type) => 
-        selectedEventTypes.includes(type as EventType)
+        selectedEventTypes.includes(type as EventType) || type === 'ANY_EVENT'
       );
       if (!hasMatchingEventType) return false;
     }

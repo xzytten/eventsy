@@ -1,6 +1,7 @@
 import { type FC, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import usePhotographerStore from '@/store/photographerStore';
+import { useServiceStore } from '@/store/serviceStore';
 import { type CartItem } from '@/types/cart';
 import { type FullServiceDetails } from './CartItemComponent';
 import { type EventType } from '@/constants/types';
@@ -20,6 +21,8 @@ const PhotographersTab: FC = () => {
     updatePhotographerDescription,
   } = usePhotographerStore();
 
+  const { eventType } = useServiceStore();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPhotographerForDetails, setSelectedPhotographerForDetails] = useState<IPhotographer | null>(null);
 
@@ -33,7 +36,18 @@ const PhotographersTab: FC = () => {
     updatePhotographerDescription(photographerId, description);
   };
 
-  const detailedPhotographerItems: DetailedPhotographerCartItem[] = selectedPhotographers.map(photographer => ({
+  // Фільтрація фотографів за типом події
+  const filteredSelectedPhotographers = selectedPhotographers.filter((photographer: IPhotographer) => {
+    if (eventType) {
+      const hasMatchingEventType = photographer.eventTypes?.some((type) => 
+        type === eventType || type === 'ANY_EVENT'
+      );
+      return hasMatchingEventType;
+    }
+    return true;
+  });
+
+  const detailedPhotographerItems: DetailedPhotographerCartItem[] = filteredSelectedPhotographers.map(photographer => ({
     id: photographer._id,
     title: photographer.name,
     category: 'photographers',

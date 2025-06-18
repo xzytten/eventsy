@@ -2,8 +2,10 @@ import { type FC, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import BeverageTabItem from '@/components/Beverage/BeverageTabItem';
 import useBeverageStore from '@/store/beverageStore';
+import { useServiceStore } from '@/store/serviceStore';
 import type { IBeverage } from '@/types/beverage';
 import type { CartItem } from '@/types/cart';
+import { type EventType } from '@/constants/types';
 import BeverageDetailsModal from '@/components/Beverage/BeverageDetailsModal';
 
 interface DetailedBeverageCartItem extends CartItem {
@@ -21,6 +23,8 @@ const BeveragesTab: FC = () => {
         updateBeverageQuantity
     } = useBeverageStore();
 
+    const { eventType } = useServiceStore();
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedBeverageForDetails, setSelectedBeverageForDetails] = useState<IBeverage | null>(null);
 
@@ -30,7 +34,18 @@ const BeveragesTab: FC = () => {
         }
     }, [availableBeverages.length, loadBeverages]);
 
-    const detailedBeverageItems: DetailedBeverageCartItem[] = selectedBeverages.map((bev) => ({
+    // Фільтрація напоїв за типом події
+    const filteredSelectedBeverages = selectedBeverages.filter((beverage: IBeverage) => {
+        if (eventType) {
+            const hasMatchingEventType = beverage.eventTypes?.some((type) => 
+                type === eventType || type === 'ANY_EVENT'
+            );
+            return hasMatchingEventType;
+        }
+        return true;
+    });
+
+    const detailedBeverageItems: DetailedBeverageCartItem[] = filteredSelectedBeverages.map((bev) => ({
         id: bev.name, // або інший унікальний ідентифікатор
         title: bev.name,
         category: 'beverages',

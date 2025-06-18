@@ -65,7 +65,7 @@ export const VehicleList: FC<VehicleListProps> = ({
     // Фільтр за типом події
     if (selectedEventTypes?.length > 0) {
       const hasMatchingEventType = vehicle.eventTypes?.some((type) => 
-        selectedEventTypes.includes(type as EventType)
+        selectedEventTypes.includes(type as EventType) || type === 'ANY_EVENT'
       );
       if (!hasMatchingEventType) return false;
     }

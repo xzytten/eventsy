@@ -1,8 +1,10 @@
 import { type FC, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useVenueStore } from '@/store/venueStore';
+import { useServiceStore } from '@/store/serviceStore';
 import { type IVenue } from '@/types/venue';
 import { type CartItem } from '@/types/cart';
+import { type EventType } from '@/constants/types';
 import VenueDetailsModal from '@/components/Venue/VenueDetailsModal';
 import VenueTabItem from '@/components/Venue/VenueTabItem';
 
@@ -19,6 +21,8 @@ const VenuesTab: FC = () => {
         updateVenueDescription
     } = useVenueStore();
 
+    const { eventType } = useServiceStore();
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedVenueForDetails, setSelectedVenueForDetails] = useState<IVenue | null>(null);
 
@@ -28,7 +32,18 @@ const VenuesTab: FC = () => {
         }
     }, [availableVenues.length, loadVenues]);
 
-    const detailedVenueItems: DetailedVenueCartItem[] = selectedVenues.map((venue) => ({
+    // Фільтрація локацій за типом події
+    const filteredSelectedVenues = selectedVenues.filter((venue: IVenue) => {
+        if (eventType) {
+            const hasMatchingEventType = venue.eventTypes?.some((type) => 
+                type === eventType || type === 'ANY_EVENT'
+            );
+            return hasMatchingEventType;
+        }
+        return true;
+    });
+
+    const detailedVenueItems: DetailedVenueCartItem[] = filteredSelectedVenues.map((venue) => ({
         id: venue._id || '',
         title: venue.name,
         category: 'venues',

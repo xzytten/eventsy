@@ -13,6 +13,7 @@ interface IOrderData {
     eventType: EventType;
     eventDate: Date;
     generalDescription?: string;
+    phoneNumber: string;
     venues?: IServiceItem[];
     food?: IServiceItem[];
     animators?: IServiceItem[];
@@ -96,6 +97,50 @@ export const getOrderDetails = async (orderId: string): Promise<any> => {
         return await response.json();
     } catch (error) {
         console.error('Error fetching order details:', error);
+        throw error;
+    }
+};
+
+export const getOrderDetailsForAdmin = async (orderId: string): Promise<any> => {
+    try {
+        const response = await fetch(`${API_URL}/orders/admin/${orderId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch order details');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching order details for admin:', error);
+        throw error;
+    }
+};
+
+export const updateOrderStatus = async (orderId: string, status: string): Promise<any> => {
+    try {
+        const response = await fetch(`${API_URL}/orders/admin/${orderId}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ status })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to update order status');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error updating order status:', error);
         throw error;
     }
 };

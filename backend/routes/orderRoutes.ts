@@ -1,5 +1,5 @@
 import express from 'express';
-import { createOrder, getUserOrders, getOrderDetails, getAllOrders } from '../controllers/orderController';
+import { createOrder, getUserOrders, getOrderDetails, getAllOrders, getOrderDetailsForAdmin, updateOrderStatus } from '../controllers/orderController';
 import { protect } from '../middleware/authMiddleware'; // Assuming you have an auth middleware
 
 const router = express.Router();
@@ -21,6 +21,16 @@ router.get('/me', getUserOrders);
 // @desc    Get all orders (Admin only)
 // @access  Private/Admin
 router.get('/all', getAllOrders);
+
+// @route   GET /api/orders/admin/:id
+// @desc    Get order details for admin (no ownership check)
+// @access  Private/Admin
+router.get('/admin/:id', getOrderDetailsForAdmin);
+
+// @route   PUT /api/orders/admin/:id/status
+// @desc    Update order status (Admin only)
+// @access  Private/Admin
+router.put('/admin/:id/status', updateOrderStatus);
 
 // @route   GET /api/orders/:id
 // @desc    Get order details

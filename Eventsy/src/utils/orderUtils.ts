@@ -4,6 +4,8 @@ import { useVenueStore } from '@/store/venueStore';
 import useFoodStore from '@/store/foodStore';
 import { useAnimatorStore } from '@/store/animatorStore';
 import { useVehicleStore } from '@/store/vehicleStore';
+import useBeverageStore from '@/store/beverageStore';
+import usePhotographerStore from '@/store/photographerStore';
 import { type EventType } from '@/constants/types';
 
 export const submitOrder = async (totalPrice: number, phoneNumber:string) => {
@@ -14,6 +16,8 @@ export const submitOrder = async (totalPrice: number, phoneNumber:string) => {
         const foodStore = useFoodStore.getState();
         const animatorStore = useAnimatorStore.getState();
         const vehicleStore = useVehicleStore.getState();
+        const beverageStore = useBeverageStore.getState();
+        const photographerStore = usePhotographerStore.getState();
         console.log(serviceStore)
         const eventType = serviceStore.eventType || localStorage.getItem('eventsy_event_type');
         if (!eventType) {
@@ -47,6 +51,17 @@ export const submitOrder = async (totalPrice: number, phoneNumber:string) => {
                 clientDescription: vehicle.clientDescription || undefined,
                 hours: vehicle.hours || undefined,
                 paymentType: vehicle.paymentType || undefined
+            })),
+            beverages: beverageStore.selectedBeverages.filter(beverage => beverage.name).map(beverage => ({
+                serviceId: beverage.name, // Для напоїв використовуємо name як serviceId
+                clientDescription: ('clientDescription' in beverage && typeof beverage.clientDescription === 'string') ? beverage.clientDescription : undefined,
+                quantity: 'quantity' in beverage && typeof beverage.quantity === 'number' ? beverage.quantity : undefined
+            })),
+            photographers: photographerStore.selectedPhotographers.filter(photographer => photographer._id).map(photographer => ({
+                serviceId: photographer._id!,
+                clientDescription: photographer.clientDescription || undefined,
+                hours: photographer.hours || undefined,
+                paymentType: photographer.paymentType || undefined
             })),
             totalPrice: totalPrice,
             phoneNumber: phoneNumber,

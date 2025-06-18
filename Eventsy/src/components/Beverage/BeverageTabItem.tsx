@@ -2,18 +2,17 @@ import { type FC, useRef, useState, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Plus, Minus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { type CartItem } from '@/types/cart';
-import { type IVenue } from '@/types/venue';
-import { useVenueStore } from '@/store/venueStore';
+import type { IBeverage } from '@/types/beverage';
+import useBeverageStore from '@/store/beverageStore';
+import toast from 'react-hot-toast';
 
 interface CartItemComponentProps {
     item: CartItem;
-    fullDetails?: IVenue;
+    fullDetails?: IBeverage;
     onRemove?: () => void;
     onUpdateQuantity?: (id: string, quantity: number) => void;
     onUpdateClientDescription?: (description: string) => void;
-    onUpdatePaymentType?: (paymentType: 'full' | 'hourly') => void;
-    onUpdateHours?: (hours: number) => void;
-    onDetailsClick: (item: CartItem, fullDetails?: IVenue) => void;
+    onDetailsClick: (item: CartItem, fullDetails?: IBeverage) => void;
 }
 
 const itemVariants = {
@@ -42,24 +41,22 @@ const itemVariants = {
     }
 };
 
-const VenueTabItem: FC<CartItemComponentProps> = ({
+const BeverageTabItem: FC<CartItemComponentProps> = ({
     item,
     fullDetails,
     onRemove,
     onUpdateQuantity,
     onUpdateClientDescription,
-    onUpdatePaymentType,
     onDetailsClick
 }) => {
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: "100px" });
     const [openDescriptionId, setOpenDescriptionId] = useState<string | null>(null);
-    const updateVenueDescription = useVenueStore(state => state.updateVenueDescription);
-    const updateVenuePaymentType = useVenueStore(state => state.updateVenuePaymentType);
-    const updateVenueHours = useVenueStore(state => state.updateVenueHours);
-    const removeVenue = useVenueStore(state => state.removeVenue);
-    const selectedVenues = useVenueStore(state => state.selectedVenues);
-    const currentVenue = selectedVenues.find(v => v._id === item.id);
+    const updateBeverageDescription = useBeverageStore(state => state.updateBeverageDescription);
+    const updateBeverageQuantity = useBeverageStore(state => state.updateBeverageQuantity);
+    const removeBeverage = useBeverageStore(state => state.removeBeverage);
+    const selectedBeverages = useBeverageStore(state => state.selectedBeverages);
+    const currentBeverage = selectedBeverages.find(b => b.name === item.id);
     const [editingClientDescription, setEditingClientDescription] = useState<{ id: string | null, value: string, isFocused: boolean }>({
         id: null,
         value: item.clientDescription || '',
@@ -74,50 +71,26 @@ const VenueTabItem: FC<CartItemComponentProps> = ({
     }, [item.clientDescription]);
 
     const handleRemove = () => {
-        console.log('Removing venue:', { itemId: item.id });
         if (item.id) {
-            removeVenue(item.id);
+            removeBeverage(item.id);
+            toast.success(`Напій '${fullDetails?.name || item.title}' був видалений!`)
             if (onRemove) {
                 onRemove();
             }
         }
     };
 
-    const handlePaymentTypeChange = (paymentType: 'full' | 'hourly') => {
-        console.log('Payment type change:', { id: item.id, paymentType, currentVenue });
+    const handleQuantityChange = (quantity: number) => {
         if (item.id) {
-            updateVenuePaymentType(item.id, paymentType);
-            if (onUpdatePaymentType) {
-                onUpdatePaymentType(paymentType);
-            }
-        }
-    };
-
-    const handleHoursChange = (hours: number) => {
-        console.log('Hours change:', { id: item.id, hours, currentVenue });
-        if (item.id) {
-            updateVenueHours(item.id, hours);
+            updateBeverageQuantity(item.id, quantity);
             if (onUpdateQuantity) {
-                onUpdateQuantity(item.id, hours);
+                onUpdateQuantity(item.id, quantity);
             }
         }
     };
-
 
     const itemTitle = fullDetails && 'name' in fullDetails ? fullDetails.name : item.title;
-
-    // Get current payment type and hours
-    const currentPaymentType = currentVenue?.paymentType || (currentVenue?.pricePerHour ? 'hourly' : 'full');
-    const currentHours = currentVenue?.hours || 1;
-
-    console.log('Current venue state:', {
-        id: item.id,
-        currentVenue,
-        paymentType: currentPaymentType,
-        hours: currentHours,
-        pricePerHour: currentVenue?.pricePerHour,
-        pricePerDay: currentVenue?.pricePerDay
-    });
+    const currentQuantity = currentBeverage && 'quantity' in currentBeverage && typeof currentBeverage.quantity === 'number' ? currentBeverage.quantity : 1;
 
     return (
         <motion.div
@@ -128,14 +101,13 @@ const VenueTabItem: FC<CartItemComponentProps> = ({
             exit="exit"
             className="bg-black-40 rounded-lg p-6 space-y-4"
         >
-            <div className='flex w-full items-center justify-center'>
-                <div className="w-full h-auto  bg-black-30 flex items-center justify-center rounded-md overflow-hidden">
-                    <img
-                        src={`http://localhost:8087${item.images[0]}` || '/placeholder-animator.jpg'}
-                        alt={itemTitle}
-                        className="w-full h-full object-cover"
-                    />
-                </div>
+            <div className="w-full h-auto bg-black-30 flex items-center justify-center rounded-md overflow-hidden">
+                <img
+                    src={item.images && item.images[0] ? `http://localhost:8087${item.images[0]}` : '/placeholder-beverage.jpg'}
+                    alt={itemTitle}
+                    className="w-full h-full object-cover"
+                    onError={e => { (e.target as HTMLImageElement).src = '/placeholder-beverage.jpg'; }}
+                />
             </div>
 
             <div className="flex justify-between items-start">
@@ -143,9 +115,9 @@ const VenueTabItem: FC<CartItemComponentProps> = ({
                     <h3 className="text-lg font-medium">{itemTitle}</h3>
                     {fullDetails && (
                         <div className="text-muted text-sm mt-1">
-                            {fullDetails.eventTypes && <p>Типи подій: {fullDetails.eventTypes.join(', ')}</p>}
-                            {fullDetails.capacity && <p>Місткість: {fullDetails.capacity} осіб</p>}
-                            {fullDetails.address && <p>Адреса: {fullDetails.address}</p>}
+                            {fullDetails.volume && <p>Обʼєм: {fullDetails.volume} мл</p>}
+                            {fullDetails.isAlcoholic && <p>Алкоголь: так{fullDetails.alcoholContent ? ` (${fullDetails.alcoholContent}%)` : ''}</p>}
+                            {!fullDetails.isAlcoholic && <p>Безалкогольний</p>}
                         </div>
                     )}
                     <button
@@ -184,7 +156,7 @@ const VenueTabItem: FC<CartItemComponentProps> = ({
                             onBlur={(e) => {
                                 const description = e.target.value;
                                 if (item.id) {
-                                    updateVenueDescription(item.id, description);
+                                    updateBeverageDescription(item.id, description);
                                     if (onUpdateClientDescription) {
                                         onUpdateClientDescription(description);
                                     }
@@ -192,7 +164,7 @@ const VenueTabItem: FC<CartItemComponentProps> = ({
                                 setEditingClientDescription(prev => ({ ...prev, isFocused: false }));
                             }}
                         ></textarea>
-                        <div className={`absolute bottom-2 right-2 flex items-center gap-1.5 text-xs text-muted/70 transition-opacity duration-200 ${editingClientDescription.isFocused ? 'opacity-100' : 'opacity-0'}`}>
+                        <div className={`absolute bottom-2 right-2 flex items-center gap-1.5 text-xs text-muted/70 transition-opacity duration-200 ${editingClientDescription.isFocused ? 'opacity-100' : 'opacity-0'}`}> 
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <circle cx="12" cy="12" r="10" />
                                 <line x1="12" y1="16" x2="12" y2="12" />
@@ -203,71 +175,38 @@ const VenueTabItem: FC<CartItemComponentProps> = ({
                     </div>
                 )}
 
-                {currentVenue && (
-                    <>
-                        {currentVenue.pricePerHour && currentVenue.pricePerDay ? (
-                            <div className="flex gap-4">
-                                <button
-                                    onClick={() => handlePaymentTypeChange('full')}
-                                    className={`flex-1 py-2 px-4 rounded-lg transition-colors cursor-pointer ${currentPaymentType === 'full'
-                                            ? 'bg-coral text-white'
-                                            : 'bg-black-30 text-muted hover:bg-white/5'
-                                        }`}
-                                >
-                                    На весь день
-                                </button>
-                                <button
-                                    onClick={() => handlePaymentTypeChange('hourly')}
-                                    className={`flex-1 py-2 px-4 rounded-lg transition-colors cursor-pointer ${currentPaymentType === 'hourly'
-                                            ? 'bg-coral text-white'
-                                            : 'bg-black-30 text-muted hover:bg-white/5'
-                                        }`}
-                                >
-                                    Погодинно
-                                </button>
-                            </div>
-                        ) : currentVenue.pricePerHour ? (
-                            <div className="text-muted mb-2">Оплата погодинно</div>
-                        ) : (
-                            <div className="text-muted mb-2">Оплата за весь день</div>
-                        )}
-                    </>
-                )}
-
-                {currentPaymentType === 'hourly' && currentVenue?.pricePerHour && (
-                    <div className="flex items-center gap-4">
-                        <span className="text-muted">Кількість годин:</span>
-                        <div className="flex items-center gap-3">
-                            <button
-                                onClick={() => handleHoursChange(currentHours - 1)}
-                                disabled={currentHours <= 1}
-                                className="p-2 hover:bg-white/5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                            >
-                                <Minus size={20} />
-                            </button>
-                            <input
-                                type="number"
-                                min="1"
-                                max="24"
-                                value={currentHours}
-                                onChange={(e) => {
-                                    const value = parseInt(e.target.value);
-                                    if (!isNaN(value) && value >= 1 && value <= 24) {
-                                        handleHoursChange(value);
-                                    }
-                                }}
-                                className="w-16 text-center bg-black-30 border border-white/10 rounded-lg px-2 py-1 text-lg focus:outline-none focus:border-coral transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                            />
-                            <button
-                                onClick={() => handleHoursChange(currentHours + 1)}
-                                disabled={currentHours >= 24}
-                                className="p-2 hover:bg-white/5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                            >
-                                <Plus size={20} />
-                            </button>
-                        </div>
+                <div className="flex items-center gap-4">
+                    <span className="text-muted">Кількість:</span>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => handleQuantityChange(currentQuantity - 1)}
+                            disabled={currentQuantity <= 1}
+                            className="p-2 hover:bg-white/5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                        >
+                            <Minus size={20} />
+                        </button>
+                        <input
+                            type="number"
+                            min="1"
+                            max="200"
+                            value={currentQuantity}
+                            onChange={(e) => {
+                                const value = parseInt(e.target.value);
+                                if (!isNaN(value) && value >= 1 && value <= 200) {
+                                    handleQuantityChange(value);
+                                }
+                            }}
+                            className="w-16 text-center bg-black-30 border border-white/10 rounded-lg px-2 py-1 text-lg focus:outline-none focus:border-coral transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        <button
+                            onClick={() => handleQuantityChange(currentQuantity + 1)}
+                            disabled={currentQuantity >= 200}
+                            className="p-2 hover:bg-white/5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                        >
+                            <Plus size={20} />
+                        </button>
                     </div>
-                )}
+                </div>
 
                 <div className="mt-4">
                     <button
@@ -281,13 +220,13 @@ const VenueTabItem: FC<CartItemComponentProps> = ({
 
             <div className="flex justify-end">
                 <span className="text-xl font-medium text-coral">
-                    {currentPaymentType === 'hourly' && currentVenue?.pricePerHour
-                        ? `${(currentVenue.pricePerHour) * currentHours} ₴`
-                        : `${currentVenue?.pricePerDay || 0} ₴`}
+                    {fullDetails && fullDetails.totalPrice
+                        ? `${fullDetails.totalPrice * currentQuantity} ₴`
+                        : '0 ₴'}
                 </span>
             </div>
         </motion.div>
     );
 };
 
-export default VenueTabItem;
+export default BeverageTabItem;

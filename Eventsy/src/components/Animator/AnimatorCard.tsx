@@ -31,11 +31,15 @@ export const AnimatorCard: FC<AnimatorCardProps> = ({
       whileTap={{ scale: 0.98 }}
       onClick={() => onDetailsClick(animator)}
     >
-      <div className="aspect-video bg-black-30 flex items-center justify-center">
+      <div className="aspect-[3/4] bg-black-30 flex items-center justify-center overflow-hidden">
         <img 
           src={`http://localhost:8087${animator.images[0]}` || '/placeholder-animator.jpg'} 
           alt={animator.name}
           className="w-full h-full object-cover"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = '/placeholder-animator.jpg';
+          }}
         />
       </div>
       <div className="p-4 flex-1 flex flex-col justify-between">

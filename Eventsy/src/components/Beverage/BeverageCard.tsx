@@ -29,11 +29,15 @@ const BeverageCard: FC<BeverageCardProps> = ({
       whileTap={{ scale: 0.98 }}
       onClick={() => onDetailsClick(beverage)}
     >
-      <div className="aspect-video bg-black-30 flex items-center justify-center">
+      <div className="aspect-[4/4] bg-black-30 flex items-center justify-center overflow-hidden">
         <img
           src={beverage.images?.[0] ? `http://localhost:8087${beverage.images[0]}` : '/placeholder-beverage.jpg'}
           alt={beverage.name}
           className="w-full h-full object-cover"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = '/placeholder-beverage.jpg';
+          }}
         />
       </div>
       <div className="p-4 flex-1 flex flex-col justify-between">

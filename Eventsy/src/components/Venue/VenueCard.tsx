@@ -30,11 +30,15 @@ const VenueCard: FC<VenueCardProps> = ({
       whileTap={{ scale: 0.98 }}
       onClick={() => onDetailsClick(venue)}
     >
-      <div className="aspect-video bg-black-30 flex items-center justify-center">
+      <div className="aspect-video bg-black-30 flex items-center justify-center overflow-hidden">
         <img 
           src={`http://localhost:8087${venue.images[0]}` || '/placeholder-venue.jpg'} 
           alt={venue.name}
           className="w-full h-full object-cover"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = '/placeholder-venue.jpg';
+          }}
         />
       </div>
       <div className="p-4 flex-1 flex flex-col justify-between">

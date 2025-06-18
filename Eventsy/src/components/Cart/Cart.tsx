@@ -28,8 +28,6 @@ const Cart: FC<CartProps> = ({ isOpen, onClose }) => {
     const { items: cartItems, getTotalPrice } = useCartStore();
     const { updateFoodDescription } = useFoodStore();
     const { eventType } = useServiceStore();
-    console.log("eventType", eventType)
-    console.log('eventType')
     const handleUpdateClientDescription = (id: string, description: string, category: ServiceCategory) => {
         switch (category) {
             case 'food':

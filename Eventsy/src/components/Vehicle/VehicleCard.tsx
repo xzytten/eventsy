@@ -29,11 +29,15 @@ const VehicleCard: FC<VehicleCardProps> = ({
       whileTap={{ scale: 0.98 }}
       onClick={() => onDetailsClick(vehicle)}
     >
-      <div className="aspect-video bg-black-30 flex items-center justify-center">
+      <div className="aspect-video bg-black-30 flex items-center justify-center overflow-hidden">
         <img
           src={`http://localhost:8087${vehicle.images[0]}` || '/placeholder-vehicle.jpg'}
           alt={vehicle.name}
           className="w-full h-full object-cover"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = '/placeholder-vehicle.jpg';
+          }}
         />
       </div>
       <div className="p-4 flex-1 flex flex-col justify-between">

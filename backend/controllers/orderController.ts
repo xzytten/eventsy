@@ -40,6 +40,7 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
     eventType,
     eventDate,
     generalDescription,
+    phoneNumber,
     venues,
     food,
     animators,
@@ -64,6 +65,7 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
       eventType,
       eventDate,
       generalDescription,
+      phoneNumber,
       venues: mapToServiceItems(venues),
       food: mapToServiceItems(food),
       animators: mapToServiceItems(animators),
@@ -138,6 +140,7 @@ export const getOrderDetails = async (req: Request, res: Response) => {
     try {
         const orderId = req.params.id;
         const userId = req.user?._id;
+        console.log('Запит деталей замовлення:', { orderId, userId });
 
         if (!userId) {
             res.status(401).json({ message: 'User not authenticated' });
@@ -148,7 +151,42 @@ export const getOrderDetails = async (req: Request, res: Response) => {
             .populate('venues.serviceId')
             .populate('food.serviceId')
             .populate('animators.serviceId')
-            .populate('vehicles.serviceId');
+            .populate('vehicles.serviceId')
+            .populate('beverages.serviceId')
+            .populate('photographers.serviceId');
+
+        console.log('Знайдене замовлення:', order);
+
+        if (!order) {
+            res.status(404).json({ message: 'Order not found' });
+            return;
+        }
+
+        const activeCategory = req.query.activeCategory as string;
+
+        res.status(200).json(order);
+    } catch (error) {
+        console.error('Error in getOrderDetails:', error);
+        res.status(500).json({ message: 'Error fetching order details', error: (error as any)?.message, stack: (error as any)?.stack });
+    }
+};
+
+// @access  Private/Admin
+export const getOrderDetailsForAdmin = async (req: Request, res: Response) => {
+    try {
+        const orderId = req.params.id;
+        console.log('Admin запит деталей замовлення:', { orderId });
+
+        const order = await Order.findById(orderId)
+            .populate('venues.serviceId')
+            .populate('food.serviceId')
+            .populate('animators.serviceId')
+            .populate('vehicles.serviceId')
+            .populate('beverages.serviceId')
+            .populate('photographers.serviceId');
+
+
+        console.log('Знайдене замовлення для адміна:', order);
 
         if (!order) {
             res.status(404).json({ message: 'Order not found' });
@@ -157,8 +195,43 @@ export const getOrderDetails = async (req: Request, res: Response) => {
 
         res.status(200).json(order);
     } catch (error) {
-        console.error('Error in getOrderDetails:', error);
-        res.status(500).json({ message: 'Error fetching order details' });
+        console.error('Error in getOrderDetailsForAdmin:', error);
+        res.status(500).json({ message: 'Error fetching order details', error: (error as any)?.message, stack: (error as any)?.stack });
+    }
+};
+
+// @access  Private/Admin
+export const updateOrderStatus = async (req: Request, res: Response) => {
+    try {
+        const orderId = req.params.id;
+        const { status } = req.body;
+        
+        console.log('Admin оновлення статусу замовлення:', { orderId, status });
+
+        // Validate status
+        const validStatuses = ['pending', 'confirmed', 'rejected', 'closed'];
+        if (!validStatuses.includes(status)) {
+            res.status(400).json({ message: 'Invalid status. Must be one of: pending, confirmed, rejected, closed' });
+            return;
+        }
+
+        const order = await Order.findByIdAndUpdate(
+            orderId,
+            { status },
+            { new: true }
+        ).populate('user', 'name email', undefined, { strictPopulate: false });
+
+        if (!order) {
+            res.status(404).json({ message: 'Order not found' });
+            return;
+        }
+
+        console.log('Статус замовлення оновлено:', { orderId, newStatus: status });
+
+        res.status(200).json(order);
+    } catch (error) {
+        console.error('Error updating order status:', error);
+        res.status(500).json({ message: 'Error updating order status', error: (error as any)?.message, stack: (error as any)?.stack });
     }
 };
 
@@ -166,7 +239,13 @@ export const getOrderDetails = async (req: Request, res: Response) => {
 export const getAllOrders = async (req: Request, res: Response): Promise<void> => {
     try {
         const orders = await Order.find({})
-            .populate('user', 'name email'); // Populate user name and email
+            .populate('user', 'name email')
+            .populate('venues.serviceId')
+            .populate('food.serviceId')
+            .populate('animators.serviceId')
+            .populate('vehicles.serviceId')
+            .populate('beverages.serviceId')
+            .populate('photographers.serviceId');
         res.status(200).json(orders);
     } catch (error) {
         console.error('Error fetching all orders:', error);

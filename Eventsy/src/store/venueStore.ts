@@ -106,12 +106,12 @@ const useVenueStore = create<VenueState>()(
             },
 
             removeVenue: (id: string) => {
-                console.log('Store: Removing venue with ID:', id);
                 const { selectedVenues } = get();
-                console.log('Current selected venues:', selectedVenues);
                 const updatedVenues = selectedVenues.filter(venue => venue._id !== id);
-                console.log('Updated venues after removal:', updatedVenues);
+                console.log(updatedVenues, "updatedVenues")
                 set({ selectedVenues: updatedVenues });
+                
+                console.log(selectedVenues, "selectedVenues")
             },
 
             clearSelectedVenues: () => {

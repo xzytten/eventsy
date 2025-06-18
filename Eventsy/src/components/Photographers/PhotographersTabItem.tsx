@@ -4,6 +4,7 @@ import { Plus, Minus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import type { CartItem } from '@/types/cart';
 import type { IPhotographer } from '@/types/photographer';
 import usePhotographerStore from '@/store/photographerStore';
+import toast from 'react-hot-toast';
 
 interface PhotographerItemComponentProps {
     item: CartItem;
@@ -61,7 +62,10 @@ const PhotographerTabItem: FC<PhotographerItemComponentProps> = ({
     const handleRemove = () => {
         if (item.id) {
             removePhotographer(item.id);
-            onRemove?.();
+            toast.success(`Фотограф '${fullDetails?.name || item.title}' був видалений!`)
+            if (onRemove) {
+                onRemove();
+            }
         }
     };
 
@@ -225,7 +229,9 @@ const PhotographerTabItem: FC<PhotographerItemComponentProps> = ({
 
             <div className="flex justify-end">
                 <span className="text-xl font-medium text-coral">
-                    {item.price ? `${item.price} ₴` : 'Ціна не вказана'}
+                    {item.paymentType === 'hourly' && currentPhotographer?.pricePerHour
+                        ? `${currentPhotographer.pricePerHour * (item.hours || 1)} ₴`
+                        : `${currentPhotographer?.pricePerDay || item.price} ₴`}
                 </span>
             </div>
         </motion.div>

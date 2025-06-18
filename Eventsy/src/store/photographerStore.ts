@@ -84,15 +84,19 @@ const usePhotographerStore = create<PhotographerState>()(
 
       updatePhotographerPaymentType: (photographerId, paymentType) => {
         set((state) => {
-          const updated = state.selectedPhotographers.map(photographer =>
-            photographer._id === photographerId
-              ? {
-                  ...photographer,
-                  paymentType,
-                  hours: paymentType === 'hourly' ? photographer.pricePerHour || 1 : undefined
-                }
-              : photographer
-          );
+          const updated = state.selectedPhotographers.map(photographer => {
+            if (photographer._id === photographerId) {
+              return {
+                ...photographer,
+                paymentType,
+                hours: paymentType === 'hourly'
+                  ? (typeof photographer.hours === 'number' && photographer.hours > 0 ? photographer.hours : 1)
+                  : undefined
+              };
+            }
+            return photographer;
+          });
+          localStorage.setItem('photographer-storage', JSON.stringify({ state: { selectedPhotographers: updated } }));
           return { selectedPhotographers: updated };
         });
       },

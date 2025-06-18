@@ -43,7 +43,7 @@ const PhotographersTab: FC = () => {
     images: photographer.images || '/placeholder-photographer.jpg',
     quantity: 1,
     paymentType: photographer.paymentType || (photographer.pricePerHour ? 'hourly' : 'full'),
-    hours: photographer.pricePerHour || (photographer.pricePerHour ? 1 : undefined),
+    hours: typeof photographer.hours === 'number' ? photographer.hours : (photographer.pricePerHour ? 1 : undefined),
     description: photographer.description || '',
     clientDescription: photographer.clientDescription || '',
     location: 'Київ',

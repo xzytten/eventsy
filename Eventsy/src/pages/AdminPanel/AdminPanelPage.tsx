@@ -1,10 +1,11 @@
 import { type FC, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '@/store/userStore';
-import { getAllOrders } from '@/services/cartService';
+import { getAllOrders, getOrderDetailsForAdmin } from '@/services/cartService';
 import { toast } from 'react-hot-toast';
 import { type EventType } from '@/types/services';
 import { EVENT_TYPE_NAMES } from '@/constants/types';
+import OrderDetailsModal from '@/components/OrderDetailsModal/OrderDetailsModal';
 
 // Тип для даних замовлення, що приходять з бекенду (з populated user та service details)
 interface IOrder {
@@ -35,6 +36,9 @@ const AdminPanelPage: FC = () => {
     const [orders, setOrders] = useState<IOrder[]>([]);
     const [isLoadingOrders, setIsLoadingOrders] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [selectedOrder, setSelectedOrder] = useState<any>(null);
+    const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+    const [isLoadingOrderDetails, setIsLoadingOrderDetails] = useState(false);
 
     useEffect(() => {
         // Only fetch orders if the user store is initialized
@@ -61,6 +65,39 @@ const AdminPanelPage: FC = () => {
         // Note: Redirection for non-admin is handled by ProtectedRoute
 
     }, [isInitializing, user]); // Depend on isInitializing and user (though user change here should not happen if ProtectedRoute works)
+
+    const handleOrderClick = async (orderId: string) => {
+        try {
+            setIsLoadingOrderDetails(true);
+            const orderDetails = await getOrderDetailsForAdmin(orderId);
+            setSelectedOrder(orderDetails);
+            setIsOrderModalOpen(true);
+        } catch (error) {
+            console.error('Error fetching order details:', error);
+            toast.error('Помилка завантаження деталей замовлення');
+        } finally {
+            setIsLoadingOrderDetails(false);
+        }
+    };
+
+    const closeOrderModal = () => {
+        setIsOrderModalOpen(false);
+        setSelectedOrder(null);
+    };
+
+    const handleOrderUpdate = (updatedOrder: any) => {
+        // Update the order in the local state
+        setOrders(prevOrders => 
+            prevOrders.map(order => 
+                order._id === updatedOrder._id ? updatedOrder : order
+            )
+        );
+        
+        // Update the selected order if it's currently open
+        if (selectedOrder && selectedOrder._id === updatedOrder._id) {
+            setSelectedOrder(updatedOrder);
+        }
+    };
 
     // We can show a simple loading state while ProtectedRoute determines access
     if (isInitializing) {
@@ -101,14 +138,17 @@ const AdminPanelPage: FC = () => {
                                 <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Сума</th>
                                 <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Статус</th>
                                 <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">Оформлено</th>
-                                {/* Add more headers if needed */}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-black-50">
                             {orders.map((order) => (
-                                <tr key={order._id}>
-                                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-white">{order._id.slice(-6)}</td> {/* Last 6 chars */}
-                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-muted">{order.user?.name || 'N/A'} ({order.user?.email || 'N/A'})</td> {/* Display user name and email */}
+                                <tr 
+                                    key={order._id} 
+                                    className="hover:bg-black-40 cursor-pointer transition-colors"
+                                    onClick={() => handleOrderClick(order._id)}
+                                >
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-white">{order._id.slice(-6)}</td>
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-muted">{order.user?.name || 'N/A'} ({order.user?.email || 'N/A'})</td>
                                     <td className="px-4 py-4 whitespace-nowrap text-sm text-muted">{EVENT_TYPE_NAMES[order.eventType] || order.eventType}</td>
                                     <td className="px-4 py-4 whitespace-nowrap text-sm text-muted">{new Date(order.eventDate).toLocaleDateString()}</td>
                                     <td className="px-4 py-4 whitespace-nowrap text-sm text-white">{order.totalPrice} ₴</td>
@@ -120,14 +160,34 @@ const AdminPanelPage: FC = () => {
                                             }`}>
                                             {order.status === 'pending' && 'Очікується підтвердження'}
                                             {order.status === 'confirmed' && 'Підтверджено'}
+                                            {order.status === 'rejected' && 'Відхилено'}
+                                            {order.status === 'closed' && 'Закрито'}
                                         </span>
                                     </td>
-                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(order.createdAt).toLocaleString()}</td>
-                                    {/* Add more data cells here */}
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-muted">{new Date(order.createdAt).toLocaleDateString()}</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
+                </div>
+            )}
+
+            {/* Order Details Modal */}
+            {selectedOrder && (
+                <OrderDetailsModal
+                    isOpen={isOrderModalOpen}
+                    onClose={closeOrderModal}
+                    order={selectedOrder}
+                    onOrderUpdate={handleOrderUpdate}
+                />
+            )}
+
+            {/* Loading overlay for order details */}
+            {isLoadingOrderDetails && (
+                <div className="fixed inset-0 bg-black-30 bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-mainbg rounded-lg p-6">
+                        <div className="text-white">Завантаження деталей замовлення...</div>
+                    </div>
                 </div>
             )}
         </div>

@@ -1,4 +1,4 @@
-export type ServiceCategory = 'animators' | 'photographers' | 'vehicles' | 'all' | 'venues' | 'food' | 'music';
+export type ServiceCategory = 'animators' | 'photographers' | 'vehicles' | 'all' | 'venues' | 'food' | 'music' | 'beverages';
 export type EventType = 'WEDDING' | 'BIRTHDAY' | 'CORPORATE' | 'CONFERENCE' | 'GRADUATION' | 'BAPTISM' | 'ANNIVERSARY' | 'BANQUET' | 'BUFFET' | 'ANY_EVENT';
 
 export interface IAgeRange {

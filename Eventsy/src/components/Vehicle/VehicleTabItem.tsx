@@ -4,6 +4,7 @@ import { Plus, Minus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { type CartItem } from '@/types/cart';
 import { type IVehicle } from '@/types/vehicle';
 import { useVehicleStore } from '@/store/vehicleStore';
+import toast from 'react-hot-toast';
 
 interface CartItemComponentProps {
     item: CartItem;
@@ -82,6 +83,7 @@ const VehicleTabItem: FC<CartItemComponentProps> = ({
     const handleRemove = () => {
         if (item.id) {
             removeVehicle(item.id);
+            toast.success(`Транспортний засіб '${fullDetails?.name || item.title}' був видалений!`)
             if (onRemove) {
                 onRemove();
             }

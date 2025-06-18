@@ -5,6 +5,8 @@ import { useVehicleStore } from './vehicleStore';
 import { useAnimatorStore } from './animatorStore';
 import useFoodStore from './foodStore';
 import { type IFood } from '@/types/food';
+import usePhotographerStore from './photographerStore';
+import useBeverageStore from './beverageStore';
 
 interface ServiceState {
     eventType: EventType | null;
@@ -19,43 +21,36 @@ interface ServiceState {
     resetServiceState: () => void;
 }
 
-// Функція для завантаження eventType з localStorage при ініціалізації
 const loadEventTypeFromLocalStorage = (): EventType | null => {
     if (typeof window === 'undefined') return null;
     const savedType = localStorage.getItem('eventsy_event_type');
-    // console.log('loadEventTypeFromLocalStorage: raw localStorage value:', savedType);
-    
-    // Перевіряємо, чи збережене значення є одним з допустимих типів EventType
+
     const eventTypes: EventType[] = ['WEDDING', 'BIRTHDAY', 'CORPORATE', 'CONFERENCE', 'GRADUATION', 'BAPTISM', 'ANNIVERSARY', 'BANQUET', 'BUFFET', 'ANY_EVENT'];
     const isValidEventType = savedType && eventTypes.includes(savedType as EventType);
     
-    // console.log('loadEventTypeFromLocalStorage: is value valid EventType?', isValidEventType);
     
     if (isValidEventType) {
-        // console.log('loadEventTypeFromLocalStorage: Valid EventType loaded:', savedType);
         return savedType as EventType;
     }
-    // console.log('loadEventTypeFromLocalStorage: No valid EventType found in localStorage or value is not in valid list. Returning null.');
+
     return null;
 };
 
-// Функція для завантаження generalDescription з localStorage
 const loadGeneralDescriptionFromLocalStorage = (): string => {
     if (typeof window === 'undefined') return '';
     return localStorage.getItem('cart-description') || '';
 };
 
-// Функція для завантаження eventDate з localStorage (зберігається як YYYY-MM-DD)
+
 const loadEventDateFromLocalStorage = (): Date | null => {
     if (typeof window === 'undefined') return null;
     const savedDateString = localStorage.getItem('event-date');
     if (savedDateString) {
-        // Парсимо рядок YYYY-MM-DD. Це створить дату опівночі в UTC
+
         const date = new Date(savedDateString);
-        // Перевіряємо, чи дата валідна. isNaN(date.getTime()) - найнадійніший спосіб перевірки валідності дати в JS
+
         if (!isNaN(date.getTime())) {
-             // Щоб отримати локальну дату без зміщення часу, створюємо нову дату з компонентів UTC дати.
-             // Це створює дату 00:00:00 локального часу для цього дня.
+
             return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
         }
     }
@@ -63,16 +58,16 @@ const loadEventDateFromLocalStorage = (): Date | null => {
 };
 
 const useServiceStore = create<ServiceState>((set, get) => ({
-    // Ініціалізуємо eventType та generalDescription з localStorage
+
     eventType: loadEventTypeFromLocalStorage(),
     venue: null,
-    eventDate: loadEventDateFromLocalStorage(), // Ініціалізуємо дату з localStorage
+    eventDate: loadEventDateFromLocalStorage(),
     generalDescription: loadGeneralDescriptionFromLocalStorage(),
 
     setEventType: (type: EventType | null) => {
         // console.log('setEventType called with:', type);
         set({ eventType: type });
-        // Зберігаємо eventType в localStorage вручну
+    
         if (type) {
             localStorage.setItem('eventsy_event_type', type);
             // console.log('setEventType: Saved eventType to localStorage:', type);
@@ -80,7 +75,7 @@ const useServiceStore = create<ServiceState>((set, get) => ({
             localStorage.removeItem('eventsy_event_type');
             // console.log('setEventType: Removed eventsy_event_type from localStorage');
         }
-        // Скидаємо стан аніматорів при зміні типу події (якщо це необхідно)
+     
         try {
             useAnimatorStore.getState().resetAnimatorState();
         } catch (e) {
@@ -91,10 +86,10 @@ const useServiceStore = create<ServiceState>((set, get) => ({
     setVenue: (venueId: string | null) => set({ venue: venueId }),
     setEventDate: (date: Date | null) => {
         set({ eventDate: date });
-        // Зберігаємо дату в localStorage як рядок YYYY-MM-DD локального часу
+  
         if (date) {
              const year = date.getFullYear();
-             const month = String(date.getMonth() + 1).padStart(2, '0'); // Місяці від 0 до 11
+             const month = String(date.getMonth() + 1).padStart(2, '0'); 
              const day = String(date.getDate()).padStart(2, '0');
              const dateString = `${year}-${month}-${day}`;
             localStorage.setItem('event-date', dateString);
@@ -104,7 +99,7 @@ const useServiceStore = create<ServiceState>((set, get) => ({
     },
     updateGeneralDescription: (description: string) => {
         set({ generalDescription: description });
-        // Зберігаємо generalDescription в localStorage вручну
+       
         localStorage.setItem('cart-description', description);
     },
 
@@ -113,15 +108,26 @@ const useServiceStore = create<ServiceState>((set, get) => ({
         const vehicleStore = useVehicleStore.getState();
         const animatorStore = useAnimatorStore.getState();
         const foodStore = useFoodStore.getState();
+        const photographerStore = usePhotographerStore.getState();
+        const beverageStore = useBeverageStore.getState();
 
         let total = 0;
 
         // Add venue prices
         venueStore.selectedVenues.forEach(venue => {
+            // Діагностика
+            console.log('Venue in total:', venue);
+
             if (venue.paymentType === 'hourly' && venue.pricePerHour && venue.hours) {
+                total += venue.pricePerHour * venue.hours;
+            } else if (venue.paymentType === 'full' && venue.pricePerDay) {
+                total += venue.pricePerDay;
+            } else if (venue.pricePerHour && venue.hours) {
                 total += venue.pricePerHour * venue.hours;
             } else if (venue.pricePerDay) {
                 total += venue.pricePerDay;
+            } else if (venue.pricePerHour) {
+                total += venue.pricePerHour;
             }
         });
 
@@ -143,10 +149,36 @@ const useServiceStore = create<ServiceState>((set, get) => ({
             }
         });
 
+        // Add photographer prices
+        photographerStore.selectedPhotographers.forEach(photographer => {
+            if (photographer.paymentType === 'hourly' && photographer.pricePerHour && photographer.hours) {
+                total += photographer.pricePerHour * photographer.hours;
+            } else if (photographer.paymentType === 'full' && photographer.pricePerDay) {
+                total += photographer.pricePerDay;
+            } else if (photographer.pricePerHour && photographer.hours) {
+                total += photographer.pricePerHour * photographer.hours;
+            } else if (photographer.pricePerDay) {
+                total += photographer.pricePerDay;
+            } else if (photographer.pricePerHour) {
+                total += photographer.pricePerHour;
+            }
+        });
+
         // Add food prices
-        foodStore.selectedFood.forEach((food: IFood) => {
+        foodStore.selectedFood.forEach((food) => {
             if (food.price) {
                 total += food.price * (food.quantity || 1);
+            }
+        });
+
+        // Add beverage prices
+        beverageStore.selectedBeverages.forEach((beverage) => {
+            if (beverage.totalPrice) {
+                if ('quantity' in beverage && typeof beverage.quantity === 'number') {
+                    total += beverage.totalPrice * beverage.quantity;
+                } else {
+                    total += beverage.totalPrice;
+                }
             }
         });
 
@@ -154,10 +186,10 @@ const useServiceStore = create<ServiceState>((set, get) => ({
     },
 
     resetServiceState: () => set({
-        eventType: loadEventTypeFromLocalStorage(), // Зберігаємо eventType при скиданні
+        eventType: loadEventTypeFromLocalStorage(),
         venue: null,
-        eventDate: loadEventDateFromLocalStorage(), // Зберігаємо дату при скиданні
-        generalDescription: loadGeneralDescriptionFromLocalStorage(), // Зберігаємо generalDescription при скиданні
+        eventDate: loadEventDateFromLocalStorage(), 
+        generalDescription: loadGeneralDescriptionFromLocalStorage(),
     }),
 }));
 

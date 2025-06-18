@@ -4,6 +4,7 @@ import { Plus, Minus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { type CartItem } from '@/types/cart';
 import { type IFood } from '@/types/food';
 import useFoodStore from '@/store/foodStore';
+import toast from 'react-hot-toast';
 
 interface CartItemComponentProps {
     item: CartItem;
@@ -74,6 +75,7 @@ const FoodTabItem: FC<CartItemComponentProps> = ({
     const handleRemove = () => {
         if (item.id) {
             removeFood(item.id);
+            toast.success(`Страва '${fullDetails?.name || item.title}' була видалена!`)
             if (onRemove) {
                 onRemove();
             }

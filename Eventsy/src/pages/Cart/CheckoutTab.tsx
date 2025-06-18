@@ -23,11 +23,11 @@ const CheckoutTab: FC = () => {
     const [phoneNumber, setPhoneNumber] = useState<string>('')
 
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        // Дозволяємо тільки цифри
+        
         const digitsOnly = e.target.value.replace(/\D/g, '');
-        setPhoneNumber(digitsOnly.slice(0, 9)); // максимум 9 цифр
+        setPhoneNumber(digitsOnly.slice(0, 9)); 
     };
-    // Calculate minimum date (2 days from now)
+
     const minDate = new Date();
     minDate.setDate(minDate.getDate() + 2);
 
@@ -44,27 +44,28 @@ const CheckoutTab: FC = () => {
 
         try {
             setIsSubmitting(true);
-            const total = getTotalPrice();
-            const result = await submitOrder(total, phoneNumber);
-            console.log(result)
-            // Очищаємо дані з localStorage
+            const totalPrice = getTotalPrice();
+            const fullPhoneNumber = `+380${phoneNumber}`;
+            await submitOrder(totalPrice, fullPhoneNumber);
+            
+            // Очищення localStorage
             localStorage.removeItem('active_step');
             localStorage.removeItem('animator-storage');
             localStorage.removeItem('eventsy_event_type');
             localStorage.removeItem('food-storage');
             localStorage.removeItem('vehicle-storage');
             localStorage.removeItem('venue-storage');
+            localStorage.removeItem('beverage-storage');
+            localStorage.removeItem('photographer-storage');
             localStorage.removeItem('eventsy_event_date');
             localStorage.removeItem('eventsy_general_description');
-            // Також очищаємо старі/дублюючі ключі на всяк випадок
             localStorage.removeItem('cart-description');
             localStorage.removeItem('event-date');
 
-            // Встановлюємо прапорець для сторінки успіху
             sessionStorage.setItem('fromCheckout', 'true');
 
+            toast.success('Замовлення успішно оформлено!');
             console.log('Redirecting to /order-success');
-            // Перенаправляємо на сторінку успіху
             window.location.href = '/order-success';
         } catch (error) {
             console.error('Error submitting order:', error);

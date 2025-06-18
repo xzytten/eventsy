@@ -3,9 +3,6 @@ import {
     User2,
     CalendarDays,
     Mail,
-    ListOrdered,
-    CheckCircle2,
-    XCircle,
     LogOut,
     BookText,
 } from 'lucide-react';
@@ -43,7 +40,6 @@ const CabinetPage: FC = () => {
                                 })
                                 : ''
                         }
-
                     />
                     <InfoField
                         icon={<Mail size={18} color='var(--color-blue-gray)' />}

@@ -36,6 +36,10 @@ const PhotographerCard: FC<PhotographerCardProps> = ({
           src={`http://localhost:8087${photographer.images[0]}`|| '/placeholder-photographer.jpg'}
           alt={photographer.name}
           className="w-full h-full object-cover"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = '/placeholder-photographer.jpg';
+          }}
         />
       </div>
       <div className="p-4 flex-1 flex flex-col justify-between">

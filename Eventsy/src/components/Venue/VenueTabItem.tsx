@@ -4,6 +4,7 @@ import { Plus, Minus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { type CartItem } from '@/types/cart';
 import { type IVenue } from '@/types/venue';
 import { useVenueStore } from '@/store/venueStore';
+import toast from 'react-hot-toast';
 
 interface CartItemComponentProps {
     item: CartItem;
@@ -74,9 +75,9 @@ const VenueTabItem: FC<CartItemComponentProps> = ({
     }, [item.clientDescription]);
 
     const handleRemove = () => {
-        console.log('Removing venue:', { itemId: item.id });
         if (item.id) {
             removeVenue(item.id);
+            toast.success(`Локація '${fullDetails?.name || item.title}' була видалена!`)
             if (onRemove) {
                 onRemove();
             }

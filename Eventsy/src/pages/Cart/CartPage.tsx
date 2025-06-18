@@ -1,14 +1,9 @@
-import { type FC, useState, useMemo, useEffect, useRef } from 'react';
+import { type FC, useState, useMemo, } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useUserStore } from '@/store/userStore';
-import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
-import { useServiceStore } from '@/store/serviceStore';
 import { type ServiceCategory } from '@/types/services';
 import Categories from '@/components/categories/Categories';
 import { categories as allCategories } from '@/constants/categories';
-import { useAnimatorStore } from '@/store/animatorStore';
 import AnimatorsTab from './AnimatorsTab';
 import FoodTab from './FoodTab';
 import MusicTab from './MusicTab';
@@ -16,14 +11,14 @@ import VenuesTab from './VenuesTab';
 import CheckoutTab from './CheckoutTab';
 import VehiclesTab from './VehiclesTab';
 import PhotographerTab from './PhotographerTab';
+import BeveragesTab from './BeverageTab';
 
 type CartCategory = Exclude<ServiceCategory, 'all'> | 'checkout';
 
 const CartPage: FC = () => {
-    // State for category filtering
+
     const [activeCategory, setActiveCategory] = useState<CartCategory>('food');
 
-    // Filter categories to exclude 'all' and add 'checkout'
     const categoriesForTabs = useMemo(() => {
         const serviceCategories = allCategories.filter(category => category.id !== 'all');
         return [
@@ -47,6 +42,8 @@ const CartPage: FC = () => {
                 return <MusicTab />;
             case 'venues':
                 return <VenuesTab />;
+            case 'beverages':
+                return <BeveragesTab />;
             case 'checkout':
                 return <CheckoutTab />;
             default:

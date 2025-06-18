@@ -1,11 +1,16 @@
 import { type FC, useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Users, Camera, Car, Utensils, MapPin, CupSoda, Music, ChevronDown } from 'lucide-react';
 import { type EventType } from '@/types/services';
 import { EVENT_TYPE_NAMES } from '@/constants/types';
 import { type IVenue } from '@/types/venue';
 import { type IFood } from '@/types/food';
 import { type IAnimator } from '@/types/animator';
 import { type IVehicle } from '@/types/vehicle';
+import { type IBeverage } from '@/types/beverage';
+import { type IPhotographer } from '@/types/photographer';
+import { updateOrderStatus } from '@/services/cartService';
+import { toast } from 'react-hot-toast';
+import { useUserStore } from '@/store/userStore';
 // Import other service types if needed (Music, Beverage, Photographer)
 
 // Тип для окремого елемента послуги в замовленні (з populated serviceId)
@@ -24,6 +29,7 @@ interface IOrder {
     eventType: EventType;
     eventDate: string;
     generalDescription?: string;
+    phoneNumber?: string;
     totalPrice: number;
     status: 'pending' | 'confirmed' | 'rejected' | 'closed';
     createdAt: string;
@@ -33,66 +39,187 @@ interface IOrder {
     vehicles?: IOrderItem<IVehicle>[];
     // Додайте інші категорії замовлень тут
     music?: IOrderItem<any>[]; // Приклад, якщо є інші категорії без чіткого типу поки що
-    beverages?: IOrderItem<any>[];
-    photographers?: IOrderItem<any>[];
+    beverages?: IOrderItem<IBeverage>[];
+    photographers?: IOrderItem<IPhotographer>[];
 }
 
 interface OrderDetailsModalProps {
     isOpen: boolean;
     onClose: () => void;
     order: IOrder;
+    onOrderUpdate?: (updatedOrder: IOrder) => void;
 }
 
-const OrderDetailsModal: FC<OrderDetailsModalProps> = ({ isOpen, onClose, order }) => {
-    const [activeCategory, setActiveCategory] = useState<
-        | 'venues'
-        | 'food'
-        | 'animators'
-        | 'vehicles'
-        | 'music'
-        | 'beverages'
-        | 'photographers'
-        | null
-    >(null);
+// Компонент для відображення картки послуги
+const ServiceCard: FC<{ item: IOrderItem<any>; type: string }> = ({ item, type }) => {
+    const service = item.serviceId;
+    if (!service) return null;
 
-    // Визначаємо наявні категорії в замовленні та встановлюємо першу як активну при відкритті
-    useEffect(() => {
-        if (isOpen && order) {
-            const categories = [
-                { key: 'venues', label: 'Локації' },
-                { key: 'food', label: 'Їжа' },
-                { key: 'animators', label: 'Аніматори' },
-                { key: 'vehicles', label: 'Транспорт' },
-                { key: 'music', label: 'Музика' },
-                { key: 'beverages', label: 'Напої' },
-                { key: 'photographers', label: 'Фотографи' },
-            ].filter(cat => order[cat.key as keyof IOrder] && order[cat.key as keyof IOrder]!.length > 0);
-
-            if (categories.length > 0) {
-                setActiveCategory(categories[0].key as any);
-            } else {
-                setActiveCategory(null);
-            }
+    const getPrice = () => {
+        // Якщо є quantity (їжа, напої, товари)
+        if (typeof item.quantity === 'number' && item.quantity > 1) {
+            // Якщо є totalPrice (наприклад, ціна за одиницю)
+            if (service.totalPrice) return service.totalPrice * item.quantity;
+            // fallback: якщо є price
+            if (service.price) return service.price * item.quantity;
         }
-    }, [isOpen, order]);
 
-    if (!isOpen) return null;
+        // Якщо є hours (погодинні послуги)
+        if (typeof item.hours === 'number' && item.hours > 0) {
+            // Якщо є pricePerHour
+            if (service.pricePerHour) return service.pricePerHour * item.hours;
+            // fallback: якщо є totalPrice (наприклад, погодинна ціна)
+            if (service.totalPrice) return service.totalPrice * item.hours;
+        }
+
+        // Якщо є paymentType === 'full' або нічого з вище не підходить
+        if (service.pricePerDay) return service.pricePerDay;
+        if (service.totalPrice) return service.totalPrice;
+        if (service.price) return service.price;
+
+        // fallback
+        return 0;
+    };
+
+    const getImage = () => {
+        if (service.images && service.images.length > 0) {
+            return `http://localhost:8087${service.images[0]}`;
+        }
+        return '/placeholder-service.jpg';
+    };
+
+    return (
+        <div className="bg-black-40 rounded-lg p-6 space-y-4">
+            <div className="w-full h-auto bg-black-30 flex items-center justify-center rounded-md overflow-hidden">
+                <img
+                    src={getImage()}
+                    alt={service.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder-service.jpg'; }}
+                />
+            </div>
+
+            <div>
+                <h3 className="text-lg font-medium">{service.name}</h3>
+                {service.description && (
+                    <p className="text-muted text-sm mt-1">{service.description}</p>
+                )}
+            </div>
+
+            <div className="space-y-2">
+                {item.quantity && item.quantity > 1 && (
+                    <p className="text-muted">Кількість: {item.quantity}</p>
+                )}
+                {item.hours && (
+                    <p className="text-muted">Годин: {item.hours}</p>
+                )}
+                {item.paymentType && (
+                    <p className="text-muted">
+                        Тип оплати: {item.paymentType === 'hourly' ? 'Погодинно' : 'На весь день'}
+                    </p>
+                )}
+                {item.clientDescription && (
+                    <div>
+                        <p className="text-muted text-sm">Додатковий опис:</p>
+                        <p className="text-sm bg-black-30 p-2 rounded">{item.clientDescription}</p>
+                    </div>
+                )}
+            </div>
+
+            <div className="flex justify-end">
+                <span className="text-xl font-medium text-coral">
+                    {getPrice()} ₴
+                </span>
+            </div>
+        </div>
+    );
+};
+
+const OrderDetailsModal: FC<OrderDetailsModalProps> = ({ isOpen, onClose, order, onOrderUpdate }) => {
+    const [activeCategory, setActiveCategory] = useState<string | null>(null);
+    const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+    const { user } = useUserStore();
+    const isAdmin = user?.role === 'admin';
+
     const categories = [
-        { key: 'venues', label: 'Локації' },
-        { key: 'food', label: 'Їжа' },
-        { key: 'animators', label: 'Аніматори' },
-        { key: 'vehicles', label: 'Транспорт' },
-        { key: 'music', label: 'Музика' },
-        { key: 'beverages', label: 'Напої' },
-        { key: 'photographers', label: 'Фотографи' },
+        { key: 'venues', label: 'Локації', icon: <MapPin size={20} /> },
+        { key: 'food', label: 'Їжа', icon: <Utensils size={20} /> },
+        { key: 'animators', label: 'Аніматори', icon: <Users size={20} /> },
+        { key: 'vehicles', label: 'Транспорт', icon: <Car size={20} /> },
+        { key: 'music', label: 'Музика', icon: <Music size={20} /> },
+        { key: 'beverages', label: 'Напої', icon: <CupSoda size={20} /> },
+        { key: 'photographers', label: 'Фотографи', icon: <Camera size={20} /> },
     ].filter(cat => {
         const value = order[cat.key as keyof IOrder];
         return Array.isArray(value) && value.length > 0;
     });
 
+    const statusOptions = [
+        { value: 'pending', label: 'Очікується підтвердження', color: 'bg-yellow-500 text-yellow-900' },
+        { value: 'confirmed', label: 'Підтверджено', color: 'bg-green-500 text-green-900' },
+        { value: 'rejected', label: 'Відхилено', color: 'bg-red-500 text-red-900' },
+        { value: 'closed', label: 'Закрито', color: 'bg-gray-500 text-gray-900' },
+    ];
+
+    const currentStatus = statusOptions.find(option => option.value === order.status);
+
+    const handleStatusUpdate = async (newStatus: 'pending' | 'confirmed' | 'rejected' | 'closed') => {
+        if (!isAdmin) return;
+        
+        // Update local state immediately
+        const updatedOrder = { ...order, status: newStatus };
+        if (onOrderUpdate) {
+            onOrderUpdate(updatedOrder);
+        }
+        
+        // Close dropdown
+        setIsStatusDropdownOpen(false);
+        
+        // Send request to backend in background
+        try {
+            await updateOrderStatus(order._id, newStatus);
+        } catch (error) {
+            console.error('Error updating order status:', error);
+            // Revert local state on error
+            if (onOrderUpdate) {
+                onOrderUpdate(order);
+            }
+            toast.error('Помилка оновлення статусу замовлення');
+        }
+    };
+
+    useEffect(() => {
+        if (isOpen && activeCategory === null && categories.length > 0) {
+            setActiveCategory(categories[0].key);
+        }
+        // eslint-disable-next-line
+    }, [isOpen, categories, activeCategory]);
+
+    // Close status dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as Element;
+            if (!target.closest('.status-dropdown')) {
+                setIsStatusDropdownOpen(false);
+            }
+        };
+
+        if (isStatusDropdownOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isStatusDropdownOpen]);
+
+    if (!isOpen) return null;
+
+    const activeItems = activeCategory ? order[activeCategory as keyof IOrder] as IOrderItem<any>[] : [];
+
     return (
         <div className="fixed inset-0 bg-black-30 bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-black rounded-xl p-6 max-w-5xl w-full max-h-[95vh] overflow-hidden flex flex-col">
+            <div className="bg-mainbg rounded-xl p-6 max-w-7xl w-full max-h-[95vh] overflow-hidden flex flex-col">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-semibold">Деталі замовлення #{order._id.slice(-6)}</h2>
                     <button
@@ -105,7 +232,7 @@ const OrderDetailsModal: FC<OrderDetailsModalProps> = ({ isOpen, onClose, order 
 
                 {/* Основна інформація */}
                 <div className="bg-black-40 rounded-lg p-4 mb-6">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
                             <p className="text-muted">Тема заходу</p>
                             <p className="font-medium">{EVENT_TYPE_NAMES[order.eventType] || order.eventType}</p>
@@ -116,20 +243,52 @@ const OrderDetailsModal: FC<OrderDetailsModalProps> = ({ isOpen, onClose, order 
                         </div>
                         <div>
                             <p className="text-muted">Статус</p>
-                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${order.status === 'pending' ? 'bg-yellow-500 text-yellow-900' :
-                                order.status === 'confirmed' ? 'bg-green-500 text-green-900' :
-                                    order.status === 'rejected' ? 'bg-red-500 text-red-900' :
-                                        'bg-gray-500 text-gray-900'
-                                }`}>
-                                {order.status === 'pending' && 'Очікується підтвердження'}
-
-                            </span>
+                            {isAdmin ? (
+                                <div className="relative status-dropdown">
+                                    <button
+                                        onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                                        className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${currentStatus?.color || 'bg-gray-500 text-gray-900'} hover:opacity-80 transition-opacity`}
+                                    >
+                                        <span>{currentStatus?.label || order.status}</span>
+                                        <ChevronDown size={16} className={`transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+                                    
+                                    {isStatusDropdownOpen && (
+                                        <div className="absolute top-full left-0 mt-1 bg-mainbg border border-black-50 rounded-lg shadow-lg z-10 min-w-48">
+                                            {statusOptions.map((option) => (
+                                                <button
+                                                    key={option.value}
+                                                    onClick={() => handleStatusUpdate(option.value as 'pending' | 'confirmed' | 'rejected' | 'closed')}
+                                                    disabled={option.value === order.status}
+                                                    className={`w-full text-left px-4 py-2 hover:bg-black-40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                                                        option.value === order.status ? 'bg-black-40' : ''
+                                                    }`}
+                                                >
+                                                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${option.color}`}>
+                                                        {option.label}
+                                                    </span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <span className={`px-3 py-1 rounded-full text-sm font-medium ${currentStatus?.color || 'bg-gray-500 text-gray-900'}`}>
+                                    {currentStatus?.label || order.status}
+                                </span>
+                            )}
                         </div>
                         <div>
                             <p className="text-muted">Загальна сума</p>
-                            <p className="font-medium">{order.totalPrice} ₴</p>
+                            <p className="font-medium text-coral">{order.totalPrice} ₴</p>
                         </div>
                     </div>
+                    {order.phoneNumber && (
+                        <div className="mt-4">
+                            <p className="text-muted">Номер телефону</p>
+                            <p className="font-medium">{order.phoneNumber}</p>
+                        </div>
+                    )}
                     {order.generalDescription && (
                         <div className="mt-4">
                             <p className="text-muted">Загальний опис</p>
@@ -140,45 +299,46 @@ const OrderDetailsModal: FC<OrderDetailsModalProps> = ({ isOpen, onClose, order 
 
                 {/* Фільтри категорій та вміст */}
                 {categories.length > 0 ? (
-                    <div className="flex flex-1 overflow-hidden">
-                        {/* Фільтри (збоку) */}
-                        <div className="flex flex-col space-y-2 pr-4 border-r border-black-50 overflow-y-auto">
-                            {categories.map(cat => (
-                                <button
-                                    key={cat.key}
-                                    className={`px-4 py-2 rounded-lg text-left transition-colors ${activeCategory === cat.key
-                                        ? 'bg-primary text-coral'
-                                        : 'bg-black-40 text-muted hover:bg-black-50'
-                                        }`}
-                                    onClick={() => setActiveCategory(cat.key as any)}
-                                >
-                                    {cat.label}
-                                </button>
-                            ))}
+                    <div className="flex flex-1 overflow-hidden gap-6">
+                        {/* Бічне меню категорій */}
+                        <div className="w-64 shrink-0">
+                            <div className="bg-black-30 rounded-xl p-4 space-y-2">
+                                <h3 className="text-lg font-semibold mb-4">Послуги</h3>
+                                {categories.map(cat => (
+                                    <button
+                                        key={cat.key}
+                                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${activeCategory === cat.key
+                                                ? 'bg-coral text-white'
+                                                : 'bg-black-40 text-muted hover:bg-white/5'
+                                            }`}
+                                        onClick={() => setActiveCategory(cat.key)}
+                                    >
+                                        {cat.icon}
+                                        <span>{cat.label}</span>
+                                        <span className="ml-auto text-sm">
+                                            {(order[cat.key as keyof IOrder] as IOrderItem<any>[])?.length || 0}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
-                        <div>asajskas</div>
-                        {/* Вміст обраної категорії */}
-                        <div className="flex-1 pl-4 overflow-y-auto">
-                            {activeCategory && (
-                                <div className="space-y-4">
-                                    {(order[activeCategory as keyof IOrder] as IOrderItem<any>[] | undefined)?.map((item: IOrderItem<any>, index: number) => (
-                                        // Тут буде відображення картки послуги
-                                        // Це спрощений приклад, і його потрібно буде адаптувати/замінити на реальні компоненти карток
-                                        <div key={index} className="bg-black-40 rounded-lg p-4 border border-black-50">
-                                            <h4 className="font-semibold text-lg">{item.serviceId?.name || 'Невідома послуга'}</h4>
-                                            <p className="text-muted">Кількість: {item.quantity}</p>
-                                            {item.paymentType && (
-                                                <p className="text-muted">Тип оплати: {item.paymentType === 'hourly' ? 'Погодинна' : 'За весь день'}</p>
-                                            )}
-                                            {item.hours && <p className="text-muted">Годин: {item.hours}</p>}
-                                            {item.clientDescription && (
-                                                <p className="text-muted mt-2">Опис клієнта: {item.clientDescription}</p>
-                                            )}
-                                            {/* Додайте іншу відповідну інформацію з item.serviceId */}
-                                        </div>
+
+                        {/* Основний контент */}
+                        <div className="flex-1 overflow-y-auto">
+                            <div className="space-y-6">
+                                <h3 className="text-xl font-semibold">
+                                    {categories.find(cat => cat.key === activeCategory)?.label}
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {activeItems.map((item, index) => (
+                                        <ServiceCard
+                                            key={index}
+                                            item={item}
+                                            type={activeCategory || ''}
+                                        />
                                     ))}
                                 </div>
-                            )}
+                            </div>
                         </div>
                     </div>
                 ) : (

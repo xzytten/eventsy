@@ -75,7 +75,9 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
             user: {
                 _id: newUser._id,
                 email: newUser.email,
-                name: newUser.name
+                name: newUser.name,
+                role: newUser.role,
+                createdAt: newUser.createdAt
             }
         });
     } catch (error) {
@@ -114,6 +116,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
                 email: user.email,
                 name: user.name,
                 role: user.role,
+                createdAt: user.createdAt
             }
         });
     } catch (error) {

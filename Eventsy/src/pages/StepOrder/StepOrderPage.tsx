@@ -15,6 +15,8 @@ import { useAnimatorStore } from '@/store/animatorStore';
 import ConfirmModal from '@/components/ConfirmModal/ConfirmModal';
 import { useVenueStore } from '@/store/venueStore';
 import { useVehicleStore } from '@/store/vehicleStore';
+import { BeverageList } from '@/components/Beverage/BeverageList';
+import { PhotographerList } from '@/components/Photographers/PhotographersList';
 
 interface Step {
     id: number;
@@ -117,38 +119,38 @@ const StepOrderPage = () => {
 
     const createSteps = (): Step[] => {
         const steps = [
-    {
-        id: 1,
+            {
+                id: 1,
                 title: 'Тип події',
                 content: (
-            <ThemeStep
-                eventType={eventType}
+                    <ThemeStep
+                        eventType={eventType}
                         onThemeChange={handleThemeChange}
-            />
-        )
-    },
-    {
-        id: 2,
+                    />
+                )
+            },
+            {
+                id: 2,
                 title: 'Місце проведення',
                 content: <VenueList showSelectButton={true} />
-    },
-    {
-        id: 3,
+            },
+            {
+                id: 3,
                 title: 'Аніматор',
                 content: <AnimatorList showSelectButton={true} />
-    },
-    {
-        id: 4,
+            },
+            {
+                id: 4,
                 title: 'Фотограф',
-                content: <ServiceStep />
-    },
-    {
-        id: 5,
-                title: 'Музика',
-                content: <ServiceStep />
-    },
-    {
-        id: 6,
+                content: <PhotographerList showSelectButton={true}/>
+            },
+            {
+                id: 5,
+                title: 'Напої',
+                content: <BeverageList showSelectButton={true} />
+            },
+            {
+                id: 6,
                 title: 'Їжа',
                 content: <FoodList showSelectButton={true} />
             },
@@ -188,22 +190,21 @@ const StepOrderPage = () => {
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="mb-16">
-            <Stepper
+                <Stepper
                     steps={createSteps()}
-                currentStep={currentStep}
-                onStepClick={setCurrentStep}
-                canNavigateToStep={canNavigateToStep}
-            />
+                    currentStep={currentStep}
+                    onStepClick={setCurrentStep}
+                    canNavigateToStep={canNavigateToStep}
+                />
             </div>
             <div className="flex justify-between items-center mt-16">
                 <button
                     onClick={handleBack}
                     disabled={currentStep === 1}
-                    className={`flex items-center gap-2 px-6 py-2 rounded-lg border-2 transition-all duration-200 ${
-                        currentStep === 1
+                    className={`flex items-center gap-2 px-6 py-2 rounded-lg border-2 transition-all duration-200 ${currentStep === 1
                             ? 'border-gray-300 text-gray-300 cursor-not-allowed'
                             : 'border-white text-white hover:border-coral hover:text-coral cursor-pointer'
-                    }`}
+                        }`}
                 >
                     <ChevronLeft size={20} />
                     Назад
@@ -211,13 +212,12 @@ const StepOrderPage = () => {
                 <button
                     onClick={handleNext}
                     disabled={currentStep === createSteps().length}
-                    className={`flex items-center gap-2 px-6 py-2 rounded-lg border-2 transition-all duration-200 ${
-                        currentStep === createSteps().length
+                    className={`flex items-center gap-2 px-6 py-2 rounded-lg border-2 transition-all duration-200 ${currentStep === createSteps().length
                             ? 'border-gray-300 text-gray-300 cursor-not-allowed'
                             : 'border-white text-white hover:border-coral hover:text-coral cursor-pointer'
-                    }`}
-                    >
-                        Далі
+                        }`}
+                >
+                    Далі
                     <ChevronRight size={20} />
                 </button>
             </div>

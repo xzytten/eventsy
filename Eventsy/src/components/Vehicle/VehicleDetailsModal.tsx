@@ -21,7 +21,7 @@ const VehicleDetailsModal: FC<VehicleDetailsModalProps> = ({ isOpen, onClose, ve
       <h2 className="text-2xl font-bold mb-4 text-coral">{vehicle.name}</h2>
       <div className="mb-6 aspect-video bg-black-20 flex items-center justify-center rounded-md overflow-hidden">
         <img
-          src={vehicle.images?.[0] || '/placeholder-vehicle.jpg'}
+          src={`http://localhost:8087${vehicle.images[0]}` || '/placeholder-vehicle.jpg'}
           alt={vehicle.name}
           className="w-full h-full object-cover"
         />

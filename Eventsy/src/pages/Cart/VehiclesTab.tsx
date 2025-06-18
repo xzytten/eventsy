@@ -38,7 +38,7 @@ const VehiclesTab: FC = () => {
         hourlyPrice: vehicle.pricePerHour,
         duration: '1 день',
         location: `${vehicle.brand} ${vehicle.model}`,
-        image: vehicle.images[0] || '',
+        images: vehicle.images || '',
         eventTypes: vehicle.eventTypes || [],
         category: 'vehicles',
         quantity: 1,

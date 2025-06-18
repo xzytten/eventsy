@@ -10,12 +10,12 @@ interface FoodCardProps {
   showSelectButton?: boolean;
 }
 
-const FoodCard: FC<FoodCardProps> = ({ 
-  food, 
-  isSelected = false, 
+const FoodCard: FC<FoodCardProps> = ({
+  food,
+  isSelected = false,
   onDetailsClick,
   onSelect,
-  showSelectButton = false 
+  showSelectButton = false
 }) => {
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -31,7 +31,7 @@ const FoodCard: FC<FoodCardProps> = ({
     >
       <div className="aspect-video bg-black-30 flex items-center justify-center">
         <img
-          src={food.images?.[0] || '/placeholder-food.jpg'}
+          src={`http://localhost:8087${food.images[0]}` || '/placeholder-animator.jpg'}
           alt={food.name}
           className="w-full h-full object-cover"
         />
@@ -66,11 +66,10 @@ const FoodCard: FC<FoodCardProps> = ({
           <div className="mt-4">
             <button
               onClick={handleClick}
-              className={`w-full py-2 px-4 rounded-lg transition-colors cursor-pointer ${
-                isSelected 
-                  ? 'bg-coral text-white' 
+              className={`w-full py-2 px-4 rounded-lg transition-colors cursor-pointer ${isSelected
+                  ? 'bg-coral text-white'
                   : 'bg-white/10 hover:bg-white/20 text-white'
-              }`}
+                }`}
             >
               {isSelected ? 'Вибрано' : 'Вибрати'}
             </button>

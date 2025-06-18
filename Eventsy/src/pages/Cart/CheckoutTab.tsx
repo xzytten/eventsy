@@ -20,7 +20,13 @@ const CheckoutTab: FC = () => {
     } = useServiceStore();
     const { isAuthenticated } = useUserStore();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [phoneNumber, setPhoneNumber] = useState<string>('')
 
+    const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        // Дозволяємо тільки цифри
+        const digitsOnly = e.target.value.replace(/\D/g, '');
+        setPhoneNumber(digitsOnly.slice(0, 9)); // максимум 9 цифр
+    };
     // Calculate minimum date (2 days from now)
     const minDate = new Date();
     minDate.setDate(minDate.getDate() + 2);
@@ -39,7 +45,7 @@ const CheckoutTab: FC = () => {
         try {
             setIsSubmitting(true);
             const total = getTotalPrice();
-            const result = await submitOrder(total);
+            const result = await submitOrder(total, phoneNumber);
             console.log(result)
             // Очищаємо дані з localStorage
             localStorage.removeItem('active_step');
@@ -53,10 +59,10 @@ const CheckoutTab: FC = () => {
             // Також очищаємо старі/дублюючі ключі на всяк випадок
             localStorage.removeItem('cart-description');
             localStorage.removeItem('event-date');
-            
+
             // Встановлюємо прапорець для сторінки успіху
             sessionStorage.setItem('fromCheckout', 'true');
-            
+
             console.log('Redirecting to /order-success');
             // Перенаправляємо на сторінку успіху
             window.location.href = '/order-success';
@@ -96,7 +102,22 @@ const CheckoutTab: FC = () => {
                         placeholder="Виберіть дату"
                     />
                 </div>
-
+                <div className="flex items-center">
+                    <span className="px-3 py-2 text-xm text-text-milk rounded-l-md select-none">
+                        +380
+                    </span>
+                    <input
+                        type="tel"
+                        name="phoneNumber"
+                        placeholder="__ ___ __ __"
+                        maxLength={9}
+                        pattern="[0-9]{9}"
+                        required
+                        value={phoneNumber}
+                        onChange={handlePhoneChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-r-md focus:outline-none focus:ring-1 focus:ring-coral focus:border-coral"
+                    />
+                </div>
                 <div className="space-y-1">
                     <p className="text-lg font-medium">Всього:</p>
                     <p className="text-2xl font-semibold text-coral">{getTotalPrice()} ₴</p>

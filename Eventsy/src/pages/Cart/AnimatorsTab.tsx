@@ -40,7 +40,7 @@ const AnimatorsTab: FC = () => {
     price: animator.pricePerDay || animator.pricePerHour,
     hourlyPrice: animator.pricePerHour,
     duration: '1 день',
-    image: animator.images?.[0] || '/placeholder-animator.jpg',
+    images: animator.images || '/placeholder-animator.jpg',
     quantity: 1,
     paymentType: animator.paymentType || (animator.pricePerHour ? 'hourly' : 'full'),
     hours: animator.hours || (animator.pricePerHour ? 1 : undefined),
@@ -56,7 +56,7 @@ const AnimatorsTab: FC = () => {
       setSelectedAnimatorForDetails(fullDetails as IAnimator);
       setIsModalOpen(true);
     }
-  };
+};
 
   const handleCloseModal = () => {
     setIsModalOpen(false);

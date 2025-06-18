@@ -8,7 +8,8 @@ import {
     UserCircle,
     ShoppingCart,
     ListOrdered,
-    Shield
+    Shield,
+    LayoutGrid
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import NavOutlinedButton from '../NavOutlinedButton/NavOutlinedButton';
@@ -32,7 +33,7 @@ const Header: FC = () => {
                             Про нас
                         </NavOutlinedButton>
 
-                        <NavOutlinedButton to="/services" icon={<Settings size={18} />}>
+                        <NavOutlinedButton to="/services" icon={<LayoutGrid size={18} />}>
                             Послуги
                         </NavOutlinedButton>
 

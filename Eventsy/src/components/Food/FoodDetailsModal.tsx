@@ -17,9 +17,9 @@ const FoodDetailsModal: FC<FoodDetailsModalProps> = ({ isOpen, onClose, food }) 
   return (
     <DetailsModal isOpen={isOpen} onClose={onClose} >
       <h2 className="text-2xl font-bold mb-4 text-coral">{food.name}</h2>
-      <div className="mb-6 aspect-video bg-black-20 flex items-center justify-center rounded-md overflow-hidden">
+      <div className="mb-6 bg-black-20 h-  rounded-md overflow-hidden relative">
         <img
-          src={food.images?.[0] || '/placeholder-food.jpg'}
+          src={food.images?.[0] ? `http://localhost:8087${food.images[0]}` : '/placeholder-food.jpg'}
           alt={food.name}
           className="w-full h-full object-cover"
         />

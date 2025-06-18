@@ -148,26 +148,27 @@ const OrdersHistoryPage: FC = () => {
                 ) : (
                     <div className="space-y-6">
                         {orders.map(order => (
-                            <div 
-                                key={order._id} 
+                            <div
+                                key={order._id}
                                 className="bg-black-40 rounded-lg p-6 border border-black-50 cursor-pointer hover:border-primary transition-colors"
                                 onClick={() => handleOrderClick(order)}
                             >
                                 <div className="flex justify-between items-center mb-4">
                                     <h2 className="text-xl font-semibold">Замовлення #{order._id.slice(-6)}</h2>
-                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                        order.status === 'pending' ? 'bg-yellow-500 text-yellow-900' :
+                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${order.status === 'pending' ? 'bg-yellow-500 text-yellow-900' :
                                         order.status === 'confirmed' ? 'bg-green-500 text-green-900' :
-                                        order.status === 'rejected' ? 'bg-red-500 text-red-900' :
-                                        'bg-gray-500 text-gray-900'
-                                    }`}>
-                                        {order.status}
+                                            order.status === 'rejected' ? 'bg-red-500 text-red-900' :
+                                                'bg-gray-500 text-gray-900'
+                                        }`}>
+                                        {order.status === 'pending' && 'Очікується підтвердження'}
+                                        {order.status === 'confirmed' && 'Підтверджено'}
                                     </span>
                                 </div>
 
                                 <div className="space-y-2 text-muted">
                                     <p><strong>Тема:</strong> {EVENT_TYPE_NAMES[order.eventType as EventType] || order.eventType}</p>
                                     <p><strong>Дата заходу:</strong> {new Date(order.eventDate).toLocaleDateString()}</p>
+
                                     <p><strong>Сума:</strong> {order.totalPrice} ₴</p>
                                     {order.generalDescription && (
                                         <p><strong>Опис:</strong> {order.generalDescription}</p>
@@ -179,7 +180,6 @@ const OrdersHistoryPage: FC = () => {
                     </div>
                 )}
             </div>
-
             {selectedOrder && (
                 <OrderDetailsModal
                     isOpen={!!selectedOrder}

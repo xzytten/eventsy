@@ -1,4 +1,4 @@
-import { type FC, useState } from 'react';
+import { type FC } from 'react';
 import logo from '@/assets/eventsy_logo.png';
 import TextField from '@/components/Fields/TextField/TextField';
 import PasswordTextField from '@/components/Fields/PasswordTextField/PasswordTextField';
@@ -6,37 +6,66 @@ import BaseButton from '@/components/Buttons/BaseButton';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '@/store/userStore';
 import { motion } from 'framer-motion';
+import { useForm } from 'react-hook-form';
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
+import toast from 'react-hot-toast';
+
+interface RegisterFormValues {
+  name: string;
+  email: string;
+  password: string;
+}
+
+const schema = yup.object().shape({
+  name: yup
+    .string()
+    .min(3, "Ім’я має містити щонайменше 3 символи")
+    .required("Введіть ім’я"),
+  email: yup
+    .string()
+    .email("Некоректна пошта")
+    .required("Введіть пошту"),
+  password: yup
+    .string()
+    .min(6, "Мінімум 6 символів")
+    .required("Введіть пароль"),
+});
 
 const RegisterPage: FC = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [error, setError] = useState('');
-  const register = useUserStore(state => state.register);
+  const registerUser = useUserStore(state => state.register);
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+  } = useForm<RegisterFormValues>({
+    resolver: yupResolver(schema),
+  });
 
+  const onSubmit = async (data: RegisterFormValues) => {
     try {
-      await register(email, password, name);
+      await registerUser(data.email, data.password, data.name);
+      toast.success('Ви успішно зареєструвались!');
       navigate('/home');
-    } catch (err) {
-      setError('Помилка реєстрації. Спробуйте ще раз.');
+    } catch (error: any) {
+      toast.error(error?.message);
+      throw new Error(error)
     }
   };
 
   return (
     <div className='flex w-full max-h-screen items-center justify-center'>
       <div className='register-container max-w-300 w-full flex gap-12 items-center'>
-        <motion.div 
+        <motion.div
           className='flex flex-col gap-5 max-w-150'
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
-          <motion.h3 
+          <motion.h3
             className='text-6xl text-center text-text-milk'
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -44,7 +73,7 @@ const RegisterPage: FC = () => {
           >
             Керуйте подіями з Eventsy
           </motion.h3>
-          <motion.h3 
+          <motion.h3
             className='text-center text-minor-text text-2xl'
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -54,11 +83,11 @@ const RegisterPage: FC = () => {
           </motion.h3>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           className='max-w-150 w-full'
           initial={{ opacity: 0, x: 100 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ 
+          transition={{
             type: "spring",
             stiffness: 50,
             damping: 15,
@@ -71,8 +100,8 @@ const RegisterPage: FC = () => {
             <div className="flex justify-between items-center mb-12">
               <img src={logo} alt="Auth background" className="w-22 h-auto" />
               <div className="flex gap-3">
-                <button 
-                  onClick={() => navigate('/auth/login')} 
+                <button
+                  onClick={() => navigate('/auth/login')}
                   className="text-m text-white/70 hover:text-white transition cursor-pointer"
                 >
                   Вхід
@@ -84,41 +113,43 @@ const RegisterPage: FC = () => {
             </div>
 
             {/* Form */}
-            <motion.form 
-              className="space-y-6 mb-5" 
-              onSubmit={handleRegister}
+            <motion.form
+              className="space-y-6 mb-5"
+              onSubmit={handleSubmit(onSubmit)}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              {error && <div className="text-red-500 text-center">{error}</div>}
+              {errors.root?.message && (
+                <div className="text-red-500 text-center">{errors.root.message}</div>
+              )}
               <TextField
                 placeholder="Ім'я"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                {...register("name")}
+                error={errors.name?.message}
               />
               <TextField
                 placeholder="Пошта"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                {...register("email")}
+                error={errors.email?.message}
               />
               <PasswordTextField
                 placeholder="Пароль"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                {...register("password")}
+                error={errors.password?.message}
               />
               <BaseButton text='Зареєструватися' />
             </motion.form>
 
             {/* Bottom link */}
-            <motion.p 
+            <motion.p
               className="text-center text-sm text-white/80"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.6 }}
             >
               Уже маю обліковий запис?{' '}
-              <span 
+              <span
                 onClick={() => navigate('/auth/login')}
                 className="underline underline-offset-2 cursor-pointer hover:text-white"
               >

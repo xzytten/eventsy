@@ -113,7 +113,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
                 _id: user._id,
                 email: user.email,
                 name: user.name,
-                role: user.role
+                role: user.role,
             }
         });
     } catch (error) {
@@ -152,12 +152,13 @@ export const verifyToken = async (req: Request, res: Response): Promise<void> =>
         }
 
         // Return user data including role
-        res.status(200).json({ 
-            user: { 
-                _id: user._id, 
-                email: user.email, 
+        res.status(200).json({
+            user: {
+                _id: user._id,
+                email: user.email,
                 name: user.name,
-                role: user.role // Include role in the response
+                role: user.role, // Include role in the response
+                createdAt: user.createdAt
             }
         });
     } catch (error) {

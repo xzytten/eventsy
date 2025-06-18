@@ -10,11 +10,12 @@ export interface CartItem {
     hourlyPrice?: number;
     duration: string;
     location: string;
-    image: string;
+    images: string[];
     quantity: number;
     paymentType: PaymentType;
     hours?: number;
     description?: string;
     eventTypes: EventType[];
     clientDescription?: string;
+    totalPrice?: number;
 } 

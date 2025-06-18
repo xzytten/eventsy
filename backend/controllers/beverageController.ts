@@ -11,3 +11,12 @@ export const createBeverage = async (req: Request, res: Response) => {
     res.status(400).json({ message: error.message });
   }
 }; 
+
+export const getAllBeverages = async (req: Request, res: Response) => {
+  try {
+    const beverages = await Beverage.find();
+    res.json(beverages);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};

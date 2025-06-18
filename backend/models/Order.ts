@@ -15,6 +15,7 @@ export interface IOrder extends Document {
   eventDate: Date; // Date of the event
   generalDescription?: string; // General description for the entire order
   // Separate arrays for each service category
+  phoneNumber: string,
   venues?: Array<{
     serviceId: mongoose.Types.ObjectId;
     clientDescription?: string;
@@ -112,6 +113,7 @@ const OrderSchema: Schema = new Schema({
   // Add other categories as needed
   createdAt: { type: Date, default: Date.now },
   totalPrice: { type: Number, required: true },
+  phoneNumber: { type: String },
   status: {
     type: String,
     required: true,

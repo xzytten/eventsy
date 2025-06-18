@@ -34,7 +34,7 @@ const FoodTab: FC = () => {
         title: food.name || food.type || 'Їжа',
         category: 'food',
         price: food.price || food.totalPrice,
-        image: food.images?.[0] || '/placeholder-food.jpg',
+        images: food.images || '/placeholder-food.jpg',
         eventTypes: food.eventTypes || [],
         quantity: 1,
         duration: '1 день',

@@ -103,7 +103,7 @@ const VenueTabItem: FC<CartItemComponentProps> = ({
         }
     };
 
-    const imageUrl = fullDetails && 'images' in fullDetails && fullDetails.images?.[0] || item.image || '/placeholder-service.jpg';
+ 
     const itemTitle = fullDetails && 'name' in fullDetails ? fullDetails.name : item.title;
 
     // Get current payment type and hours
@@ -128,12 +128,14 @@ const VenueTabItem: FC<CartItemComponentProps> = ({
             exit="exit"
             className="bg-black-40 rounded-lg p-6 space-y-4"
         >
-            <div className="w-full h-48 bg-black-30 flex items-center justify-center rounded-md overflow-hidden">
-                <img
-                    src={imageUrl}
-                    alt={itemTitle}
-                    className="w-full h-full object-cover"
-                />
+            <div className='flex w-full items-center justify-center'>
+                <div className="w-full h-auto  bg-black-30 flex items-center justify-center rounded-md overflow-hidden">
+                    <img
+                        src={`http://localhost:8087${item.images[0]}` || '/placeholder-animator.jpg'}
+                        alt={itemTitle}
+                        className="w-full h-full object-cover"
+                    />
+                </div>
             </div>
 
             <div className="flex justify-between items-start">

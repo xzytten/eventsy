@@ -34,7 +34,7 @@ const VenuesTab: FC = () => {
         category: 'venues',
         price: venue.pricePerDay || venue.pricePerHour || 0,
         hourlyPrice: venue.pricePerHour,
-        image: venue.images?.[0] || '/placeholder-venue.jpg',
+        images: venue.images || '/placeholder-venue.jpg',
         description: venue.description || '',
         quantity: 1,
         duration: '1 день',

@@ -19,7 +19,7 @@ export interface IFood {
   isVegetarian?: boolean;
   isVegan?: boolean;
   allergens?: string[];
-  images?: string[];
+  images: string[];
   isActive: boolean;
   createdAt?: Date;
   updatedAt?: Date;

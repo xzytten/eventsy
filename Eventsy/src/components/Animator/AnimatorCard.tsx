@@ -33,7 +33,7 @@ export const AnimatorCard: FC<AnimatorCardProps> = ({
     >
       <div className="aspect-video bg-black-30 flex items-center justify-center">
         <img 
-          src={animator.images[0] || '/placeholder-animator.jpg'} 
+          src={`http://localhost:8087${animator.images[0]}` || '/placeholder-animator.jpg'} 
           alt={animator.name}
           className="w-full h-full object-cover"
         />

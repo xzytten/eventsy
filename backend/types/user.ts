@@ -5,6 +5,8 @@ export interface IUser {
     name: string;
     role?: 'user' | 'admin';
     orders?: string[];
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 

@@ -64,24 +64,24 @@ const AdminPanelPage: FC = () => {
 
     // We can show a simple loading state while ProtectedRoute determines access
     if (isInitializing) {
-         return <div className="flex justify-center items-center min-h-screen text-white">Завантаження...</div>;
+        return <div className="flex justify-center items-center min-h-screen text-white">Завантаження...</div>;
     }
 
     // ProtectedRoute handles non-admin, so if we reach here, user is admin (or null if initial check fails)
     // Display error if fetching orders failed
     if (error) {
         return (
-             <div className="container mx-auto p-4 text-red-500 text-center">
+            <div className="container mx-auto p-4 text-red-500 text-center">
                 <h1 className="text-3xl font-bold mb-6">Помилка завантаження замовлень</h1>
                 <p>Помилка: {error}</p>
             </div>
         );
     }
 
-     // Display loading state while orders are being fetched
-     if (isLoadingOrders) {
-         return <div className="flex justify-center items-center min-h-screen text-white">Завантаження списку замовлень...</div>;
-     }
+    // Display loading state while orders are being fetched
+    if (isLoadingOrders) {
+        return <div className="flex justify-center items-center min-h-screen text-white">Завантаження списку замовлень...</div>;
+    }
 
     return (
         <div className="container mx-auto p-4 text-white">
@@ -113,13 +113,13 @@ const AdminPanelPage: FC = () => {
                                     <td className="px-4 py-4 whitespace-nowrap text-sm text-muted">{new Date(order.eventDate).toLocaleDateString()}</td>
                                     <td className="px-4 py-4 whitespace-nowrap text-sm text-white">{order.totalPrice} ₴</td>
                                     <td className="px-4 py-4 whitespace-nowrap text-sm">
-                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                            order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                            order.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                                            order.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                                            'bg-gray-100 text-gray-800'
-                                        }`}>
-                                            {order.status}
+                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                order.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                                                    order.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                                        'bg-gray-100 text-gray-800'
+                                            }`}>
+                                            {order.status === 'pending' && 'Очікується підтвердження'}
+                                            {order.status === 'confirmed' && 'Підтверджено'}
                                         </span>
                                     </td>
                                     <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(order.createdAt).toLocaleString()}</td>

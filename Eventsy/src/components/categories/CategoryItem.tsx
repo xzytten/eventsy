@@ -7,7 +7,6 @@ interface CategoryItemProps {
     icon: ReactElement | null;
     label: string;
     isActive: boolean;
-    count?: number;
     index: number;
     onClick: (id: ServiceCategory) => void;
 }
@@ -17,7 +16,6 @@ const CategoryItem: FC<CategoryItemProps> = ({
     icon,
     label,
     isActive,
-    count,
     index,
     onClick,
 }) => {
@@ -43,9 +41,6 @@ const CategoryItem: FC<CategoryItemProps> = ({
                 {icon && icon}
                 <span>{label}</span>
             </div>
-            <span className="text-sm bg-white/10 px-2 py-0.5 rounded-full">
-                {count}
-            </span>
         </motion.button>
     );
 };

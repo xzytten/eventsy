@@ -14,6 +14,7 @@ const venueSchema = new mongoose.Schema({
     enum: EVENT_TYPES,
     required: true
   }],
+  images: [{ type: String }],
   contactInfo: {
     phone: { type: String },
     email: { type: String }

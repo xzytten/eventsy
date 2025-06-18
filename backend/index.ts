@@ -12,6 +12,8 @@ import orderRouter from './routes/orderRoutes';
 import {createChatServer} from "./ws/websocket";
 import * as http from "node:http";
 import WebSocket from 'ws';
+import photographerRouter from './routes/photographerRoutes';
+import path from 'path';
 
 dotenv.config();
 console.log('DOTENV_CONFIG: Variables loaded:', Object.keys(process.env).length > 0 ? 'Yes' : 'No', '(Count:', Object.keys(process.env).length, ')');
@@ -26,10 +28,6 @@ const _DBURL = process.env.MONGODB_URI || 'mongodb+srv://xzyttenadminKAHSJ12:!ev
 app.use(cors());
 app.use(express.json());
 // app.use(cors());
-app.get('/ping', (req, res) => {
-  console.log('💥 PING HIT');
-  res.send('🏓 Server is alive');
-});
 app.use('/api/auth', authRouter);
 app.use('/api/venues', venueRouter);
 app.use('/api/vehicle', vehicleRouter);
@@ -37,8 +35,8 @@ app.use('/api/food', foodRouter);
 app.use('/api/animator', animatorRouter);
 app.use('/api/beverage', beverageRouter);
 app.use('/api/orders', orderRouter);
-
-
+app.use('/api/photographers', photographerRouter);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 async function connectDataBase() {
     try {

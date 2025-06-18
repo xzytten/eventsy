@@ -16,9 +16,9 @@ const AnimatorDetailsModal: FC<AnimatorDetailsModalProps> = ({ isOpen, onClose, 
   return (
     <DetailsModal isOpen={isOpen} onClose={onClose} >
       <h2 className="text-2xl font-bold mb-4 text-coral">{animator.name}</h2>
-      <div className="mb-6 aspect-video bg-black-20 flex items-center justify-center rounded-md overflow-hidden">
+      <div className="mb-6 bg-black-20 flex items-center justify-center rounded-md overflow-hidden">
         <img
-          src={animator.images?.[0] || '/placeholder-animator.jpg'}
+          src={`http://localhost:8087${animator.images[0]}`|| '/placeholder-animator.jpg'}
           alt={animator.name}
           className="w-full h-full object-cover"
         />

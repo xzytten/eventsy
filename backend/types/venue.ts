@@ -13,6 +13,7 @@ export interface IVenue {
     phone?: string;
     email?: string;
   };
+  images: string[];
   rating: number;
   reviews: string[];
   isActive: boolean;

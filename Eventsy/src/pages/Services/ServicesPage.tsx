@@ -1,11 +1,13 @@
 import { type FC, useState } from 'react';
-import { Users, Camera, Car, MapPin, Utensils } from 'lucide-react';
+import { Users, Camera, Car, MapPin, Utensils, CupSoda, Image } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnimatorList } from '@/components/Animator/AnimatorList';
 import { VenueList } from '@/components/Venue/VenueList';
 import { FoodList } from '@/components/Food/FoodList';
 import { VehicleList } from '@/components/Vehicle/VehicleList';
+import {BeverageList} from '@/components/Beverage/BeverageList';
 import ServiceFilters from '@/components/Services/ServiceFilters';
+import { PhotographerList } from '@/components/Photographers/PhotographersList';
 
 const ServicesPage: FC = () => {
     const [currentStep, setCurrentStep] = useState(0);
@@ -29,10 +31,11 @@ const ServicesPage: FC = () => {
 
     const categories = [
         { id: 'animators', icon: <Users size={20} />, label: 'Аніматори' },
-        { id: 'photographers', icon: <Camera size={20} />, label: 'Фотографи' },
         { id: 'vehicles', icon: <Car size={20} />, label: 'Автомобілі' },
         { id: 'venues', icon: <MapPin size={20} />, label: 'Локації' },
-        { id: 'food', icon: <Utensils size={20} />, label: 'Їжа' }
+        { id: 'food', icon: <Utensils size={20} />, label: 'Їжа' },
+        { id: 'beverage', icon: <CupSoda size={20} />, label: 'Напої' },
+        { id: 'photographers', icon: <Camera size={20} />, label: 'Фотографи' },
     ] as const;
 
     return (
@@ -104,7 +107,7 @@ const ServicesPage: FC = () => {
                                 onMaxPriceChange={handleMaxPriceChange}
                             />
                         )}
-                        {currentStep === 3 && (
+                        {currentStep === 2 && (
                             <VenueList
                                 selectedEventTypes={selectedEventTypes}
                                 priceRange={priceRange}
@@ -113,18 +116,32 @@ const ServicesPage: FC = () => {
                                 showSelectButton={true}
                             />
                         )}
-                        {currentStep === 4 && (
+                        {currentStep === 3 && (
                             <FoodList
                                 selectedEventTypes={selectedEventTypes}
                                 priceRange={priceRange}
                                 onMaxPriceChange={handleMaxPriceChange}
                             />
                         )}
-                        {currentStep === 2 && (
+                        {currentStep === 1 && (
                             <VehicleList
                                 selectedEventTypes={selectedEventTypes}
                                 priceRange={priceRange}
                                 isHourly={isHourly}
+                                onMaxPriceChange={handleMaxPriceChange}
+                            />
+                        )}
+                            {currentStep === 4 && (
+                            <BeverageList
+                                selectedEventTypes={selectedEventTypes}
+                                priceRange={priceRange}
+                                onMaxPriceChange={handleMaxPriceChange}
+                            />
+                        )}
+                         {currentStep === 5 && (
+                            <PhotographerList
+                                selectedEventTypes={selectedEventTypes}
+                                priceRange={priceRange}
                                 onMaxPriceChange={handleMaxPriceChange}
                             />
                         )}

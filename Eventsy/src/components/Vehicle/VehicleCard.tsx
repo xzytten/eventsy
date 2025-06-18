@@ -31,7 +31,7 @@ const VehicleCard: FC<VehicleCardProps> = ({
     >
       <div className="aspect-video bg-black-30 flex items-center justify-center">
         <img
-          src={vehicle.images?.[0] || '/placeholder-vehicle.jpg'}
+          src={`http://localhost:8087${vehicle.images[0]}` || '/placeholder-vehicle.jpg'}
           alt={vehicle.name}
           className="w-full h-full object-cover"
         />

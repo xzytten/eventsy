@@ -4,6 +4,7 @@ import { Plus, Minus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { type CartItem } from '@/types/cart';
 import { type IAnimator } from '@/types/animator';
 import { useAnimatorStore } from '@/store/animatorStore';
+import toast from 'react-hot-toast';
 
 interface CartItemComponentProps {
     item: CartItem;
@@ -74,8 +75,9 @@ const AnimatorTabItem: FC<CartItemComponentProps> = ({
     }, [item.clientDescription]);
 
     const handleRemove = () => {
-        if (item.id) {
+        if (item) {
             removeAnimator(item.id);
+            toast.success(`Послуга '${fullDetails?.name}' була видалена!`)
             if (onRemove) {
                 onRemove();
             }
@@ -100,7 +102,6 @@ const AnimatorTabItem: FC<CartItemComponentProps> = ({
         }
     };
 
-    const imageUrl = fullDetails && 'images' in fullDetails && fullDetails.images?.[0] || item.image || '/placeholder-service.jpg';
     const itemTitle = fullDetails && 'name' in fullDetails ? fullDetails.name : item.title;
 
     return (
@@ -112,12 +113,14 @@ const AnimatorTabItem: FC<CartItemComponentProps> = ({
             exit="exit"
             className="bg-black-40 rounded-lg p-6 space-y-4"
         >
-            <div className="w-full h-48 bg-black-30 flex items-center justify-center rounded-md overflow-hidden">
-                <img
-                    src={imageUrl}
-                    alt={itemTitle}
-                    className="w-full h-full object-cover"
-                />
+            <div className='flex w-full items-center justify-center'>
+                <div className="w-[500px] h-auto  bg-black-30 flex items-center justify-center rounded-md overflow-hidden">
+                    <img
+                        src={`http://localhost:8087${item.images[0]}` || '/placeholder-animator.jpg'}
+                        alt={itemTitle}
+                        className="w-full h-full object-cover"
+                    />
+                </div>
             </div>
 
             <div className="flex justify-between items-start">
@@ -186,26 +189,26 @@ const AnimatorTabItem: FC<CartItemComponentProps> = ({
                 {currentAnimator && (
                     <>
                         {currentAnimator.pricePerHour && currentAnimator.pricePerDay ? (
-                <div className="flex gap-4">
-                    <button
+                            <div className="flex gap-4">
+                                <button
                                     onClick={() => handlePaymentTypeChange('full')}
-                        className={`flex-1 py-2 px-4 rounded-lg transition-colors cursor-pointer ${item.paymentType === 'full'
-                                ? 'bg-coral text-white'
-                                : 'bg-black-30 text-muted hover:bg-white/5'
-                            }`}
-                    >
-                        На весь день
-                    </button>
-                    <button
+                                    className={`flex-1 py-2 px-4 rounded-lg transition-colors cursor-pointer ${item.paymentType === 'full'
+                                        ? 'bg-coral text-white'
+                                        : 'bg-black-30 text-muted hover:bg-white/5'
+                                        }`}
+                                >
+                                    На весь день
+                                </button>
+                                <button
                                     onClick={() => handlePaymentTypeChange('hourly')}
-                        className={`flex-1 py-2 px-4 rounded-lg transition-colors cursor-pointer ${item.paymentType === 'hourly'
-                                ? 'bg-coral text-white'
-                                : 'bg-black-30 text-muted hover:bg-white/5'
-                            }`}
-                    >
-                        Погодинно
-                    </button>
-                </div>
+                                    className={`flex-1 py-2 px-4 rounded-lg transition-colors cursor-pointer ${item.paymentType === 'hourly'
+                                        ? 'bg-coral text-white'
+                                        : 'bg-black-30 text-muted hover:bg-white/5'
+                                        }`}
+                                >
+                                    Погодинно
+                                </button>
+                            </div>
                         ) : currentAnimator.pricePerHour ? (
                             <div className="text-muted mb-2">Оплата погодинно</div>
                         ) : (

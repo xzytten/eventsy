@@ -1,22 +1,28 @@
-import { type FC } from 'react';
+import { forwardRef } from 'react';
 
-interface TextFieldProps {
-    placeholder: string;
-    type?: string,
-    value?: string;
-    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+interface TextFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  error?: string;
 }
 
-const TextField: FC<TextFieldProps> = ({ placeholder, value, onChange, type = 'text' }) => {
+const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
+  ({ placeholder, type = 'text', error, className = '', ...rest }, ref) => {
     return (
+      <div className="flex flex-col gap-1 w-full">
         <input
-            type={type}
-            placeholder={placeholder}
-            value={value}
-            onChange={onChange}
-            className="w-full px-4 py-2 rounded-md bg-bg-dark-60  text-white  focus:outline-none focus:ring-1 focus:ring-[#f97480]"
+          ref={ref}
+          type={type}
+          placeholder={placeholder}
+          className={`w-full px-4 py-2 rounded-md bg-bg-dark-60 text-white focus:outline-none focus:ring-1 ${
+            error ? 'ring-red-500' : 'focus:ring-[#f97480]'
+          } ${className}`}
+          {...rest}
         />
+        {error && <span className="text-red-500 text-sm">{error}</span>}
+      </div>
     );
-};
+  }
+);
+
+TextField.displayName = 'TextField';
 
 export default TextField;

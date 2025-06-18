@@ -6,6 +6,8 @@ interface User {
     email: string;
     name: string;
     role?: 'user' | 'admin';
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 interface AuthResponse {
@@ -39,7 +41,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         try {
             const authService = AuthService.getInstance();
             const response = await authService.login(email, password);
-        
+
             set({
                 user: response.user,
                 token: response.token,
@@ -57,16 +59,17 @@ export const useUserStore = create<UserState>((set, get) => ({
         try {
             const authService = AuthService.getInstance();
             await authService.register(email, password, name);
-        } catch (error) {
-            console.error('Register error in store:', error);
-            throw error;
+        } catch (error: any) {
+            const message =
+                error?.message || 'Помилка реєстрації';
+            throw new Error(message);
         }
     },
 
     logout: () => {
         const authService = AuthService.getInstance();
         authService.logout();
-        
+
         set({
             user: null,
             token: null,
@@ -91,13 +94,13 @@ export const useUserStore = create<UserState>((set, get) => ({
                 console.log('Store init - Token valid, setting user data:', response.user);
                 set({ user: response.user, token, isAuthenticated: true });
             } else {
-                 console.log('Store init - Token invalid or user not found.');
-                 console.log('Store init: Calling authService.removeToken() due to invalid token');
-                 authService.removeToken();
-                 set({ user: null, token: null, isAuthenticated: false });
+                console.log('Store init - Token invalid or user not found.');
+                console.log('Store init: Calling authService.removeToken() due to invalid token');
+                authService.removeToken();
+                set({ user: null, token: null, isAuthenticated: false });
             }
         }
-         console.log('Store init - Initialization finished.');
+        console.log('Store init - Initialization finished.');
         set({ isInitializing: false });
     }
 }));

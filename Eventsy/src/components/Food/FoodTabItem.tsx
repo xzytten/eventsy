@@ -89,7 +89,7 @@ const FoodTabItem: FC<CartItemComponentProps> = ({
         }
     };
 
-    const imageUrl = fullDetails && 'images' in fullDetails && fullDetails.images?.[0] || item.image || '/placeholder-service.jpg';
+    // const imageUrl = fullDetails && 'images' in fullDetails && fullDetails.images?.[0] || item.image || '/placeholder-service.jpg';
     const itemTitle = fullDetails && 'name' in fullDetails ? fullDetails.name : item.title;
 
     return (
@@ -101,9 +101,9 @@ const FoodTabItem: FC<CartItemComponentProps> = ({
             exit="exit"
             className="bg-black-40 rounded-lg p-6 space-y-4"
         >
-            <div className="w-full h-48 bg-black-30 flex items-center justify-center rounded-md overflow-hidden">
+            <div className="w-full h-auto bg-black-30 flex items-center justify-center rounded-md overflow-hidden">
                 <img
-                    src={imageUrl}
+                src={`http://localhost:8087${item.images[0]}` || '/placeholder-animator.jpg'} 
                     alt={itemTitle}
                     className="w-full h-full object-cover"
                 />
@@ -218,7 +218,7 @@ const FoodTabItem: FC<CartItemComponentProps> = ({
 
             <div className="flex justify-end">
                 <span className="text-xl font-medium text-coral">
-                    {currentFood?.totalPrice 
+                    {currentFood?.totalPrice
                         ? `${currentFood.totalPrice * (currentFood?.quantity || 1)}  ₴`
                         : `${(currentFood?.price || 0) * (currentFood?.quantity || 1)} ₴`}
                 </span>

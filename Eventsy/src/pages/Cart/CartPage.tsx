@@ -10,12 +10,12 @@ import Categories from '@/components/categories/Categories';
 import { categories as allCategories } from '@/constants/categories';
 import { useAnimatorStore } from '@/store/animatorStore';
 import AnimatorsTab from './AnimatorsTab';
-import PhotographersTab from './PhotographersTab';
 import FoodTab from './FoodTab';
 import MusicTab from './MusicTab';
 import VenuesTab from './VenuesTab';
 import CheckoutTab from './CheckoutTab';
 import VehiclesTab from './VehiclesTab';
+import PhotographerTab from './PhotographerTab';
 
 type CartCategory = Exclude<ServiceCategory, 'all'> | 'checkout';
 
@@ -38,7 +38,7 @@ const CartPage: FC = () => {
             case 'animators':
                 return <AnimatorsTab />;
             case 'photographers':
-                return <PhotographersTab />;
+                return <PhotographerTab />;
             case 'vehicles':
                 return <VehiclesTab />;
             case 'food':

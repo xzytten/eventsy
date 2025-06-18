@@ -21,7 +21,7 @@ const CabinetPage: FC = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="max-w-3xl mx-auto px-4 py-10 space-y-10">
+        <div className="max-w-3xl mx-auto h-full px-4 py-10 space-y-10">
             {/* Персональні дані */}
             <div>
                 <h2 className="text-xl font-semibold mb-4">Персональні дані</h2>
@@ -34,34 +34,22 @@ const CabinetPage: FC = () => {
                     <InfoField
                         icon={<CalendarDays size={18} color='var(--color-blue-gray)' />}
                         label="Дата реєстрації"
-                        value="13 Березня 2025"
+                        value={
+                            user?.createdAt
+                                ? new Date(user.createdAt).toLocaleDateString('uk-UA', {
+                                    day: 'numeric',
+                                    month: 'long',
+                                    year: 'numeric'
+                                })
+                                : ''
+                        }
+
                     />
                     <InfoField
                         icon={<Mail size={18} color='var(--color-blue-gray)' />}
                         label="Пошта"
-                        value="maksgnatok23@gmail.com"
-                    />
-                </div>
-            </div>
+                        value={user?.email || ''}
 
-            {/* Статистика */}
-            <div>
-                <h2 className="text-xl font-semibold mb-4">Статистика</h2>
-                <div className="bg-black-30 rounded-xl p-6 grid gap-4 text-sm md:text-base">
-                    <InfoField
-                        icon={<ListOrdered size={18} color='var(--color-blue-gray)' />}
-                        label="Загальна кількість замовлень"
-                        value={10}
-                    />
-                    <InfoField
-                        icon={<CheckCircle2 size={18} color='var(--color-blue-gray)' />}
-                        label="Успішно виконаних замовлень"
-                        value={7}
-                    />
-                    <InfoField
-                        icon={<XCircle size={18} color='var(--color-blue-gray)' />}
-                        label="Скасовано"
-                        value={2}
                     />
                 </div>
             </div>

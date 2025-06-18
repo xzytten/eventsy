@@ -18,7 +18,7 @@ export interface IVenue {
   isActive: boolean;
   createdAt?: Date;
   updatedAt?: Date;
-  images?: string[];
+  images: string[];
   clientDescription?: string;
   paymentType?: 'full' | 'hourly';
   hours?: number;

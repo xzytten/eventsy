@@ -18,7 +18,7 @@ const VenueDetailsModal: FC<VenueDetailsModalProps> = ({ isOpen, onClose, venue 
       <h2 className="text-2xl font-bold mb-4 text-coral">{venue.name}</h2>
       <div className="mb-6 aspect-video bg-black-20 flex items-center justify-center rounded-md overflow-hidden">
         <img
-          src={venue.images?.[0] || '/placeholder-venue.jpg'}
+          src={`http://localhost:8087${venue.images[0]}` || '/placeholder-venue.jpg'}
           alt={venue.name}
           className="w-full h-full object-cover"
         />

@@ -7,15 +7,16 @@ import { type IVenue } from '@/types/venue';
 import { type IAnimator } from '@/types/animator';
 import { type IVehicle } from '@/types/vehicle';
 import { type ServiceCategory } from '@/types/services';
+import type { IPhotographer } from '@/types/photographer';
 
 // Define a union type for possible full details
-export type FullServiceDetails = IFood | IVenue | IAnimator | IVehicle; // Export the type
+export type FullServiceDetails = IFood | IVenue | IAnimator | IVehicle | IPhotographer; // Export the type
 
 interface CartItemComponentProps {
     item: CartItem;
     fullDetails?: FullServiceDetails;
     onRemove?: () => void;
-    onUpdateQuantity: (id: string, quantity: number) => void;
+    onUpdateQuantity?: (id: string, quantity: number) => void;
     onUpdateClientDescription?: (id: string, description: string) => void;
     onUpdatePaymentType?: (paymentType: 'full' | 'hourly') => void;
     onUpdateHours?: (hours: number) => void;
@@ -70,7 +71,7 @@ const CartItemComponent: FC<CartItemComponentProps> = ({
         }));
     }, [item.clientDescription]);
 
-    const imageUrl = fullDetails && 'images' in fullDetails && fullDetails.images?.[0] || item.image || '/placeholder-service.jpg';
+    const imageUrl = fullDetails && 'images' in fullDetails && fullDetails.images?.[0] || item.images || '/placeholder-service.jpg';
     const itemTitle = fullDetails && 'name' in fullDetails ? fullDetails.name : item.title;
 
     return (
@@ -84,7 +85,7 @@ const CartItemComponent: FC<CartItemComponentProps> = ({
         >
             <div className="w-full h-48 bg-black-30 flex items-center justify-center rounded-md overflow-hidden">
                  <img 
-                    src={imageUrl}
+                    // src={imageUrl}
                     alt={itemTitle}
                     className="w-full h-full object-cover"
                 />

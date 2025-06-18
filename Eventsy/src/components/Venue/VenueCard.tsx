@@ -32,7 +32,7 @@ const VenueCard: FC<VenueCardProps> = ({
     >
       <div className="aspect-video bg-black-30 flex items-center justify-center">
         <img 
-          src={venue.images?.[0] || '/placeholder-venue.jpg'} 
+          src={`http://localhost:8087${venue.images[0]}` || '/placeholder-venue.jpg'} 
           alt={venue.name}
           className="w-full h-full object-cover"
         />
@@ -52,9 +52,6 @@ const VenueCard: FC<VenueCardProps> = ({
               <p>Ціна за день: {venue.pricePerDay} грн</p>
             )}
             <p>Типи подій: {venue.eventTypes.map(type => EVENT_TYPE_NAMES[type]).join(', ')}</p>
-            {venue.rating && (
-              <p>Рейтинг: {venue.rating}/5</p>
-            )}
           </div>
         </div>
         {showSelectButton && (

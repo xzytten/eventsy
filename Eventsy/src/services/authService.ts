@@ -73,12 +73,13 @@ class AuthService {
             },
             body: JSON.stringify({ email, password, name }),
         });
+        const data = await response.json();
 
         if (!response.ok) {
-            throw new Error('Registration failed');
+            const message = data?.message || 'Registration failed';
+            throw new Error(message);
         }
-
-        const data = await response.json();
+        
         this.setToken(data.token);
         return data;
     }

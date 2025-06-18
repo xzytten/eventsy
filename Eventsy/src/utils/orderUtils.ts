@@ -6,7 +6,7 @@ import { useAnimatorStore } from '@/store/animatorStore';
 import { useVehicleStore } from '@/store/vehicleStore';
 import { type EventType } from '@/constants/types';
 
-export const submitOrder = async (totalPrice: number) => {
+export const submitOrder = async (totalPrice: number, phoneNumber:string) => {
     try {
         // Отримуємо дані зі сторів
         const serviceStore = useServiceStore.getState();
@@ -48,7 +48,8 @@ export const submitOrder = async (totalPrice: number) => {
                 hours: vehicle.hours || undefined,
                 paymentType: vehicle.paymentType || undefined
             })),
-            totalPrice: totalPrice
+            totalPrice: totalPrice,
+            phoneNumber: phoneNumber,
         };
         console.log(orderData)
         // Відправка замовлення

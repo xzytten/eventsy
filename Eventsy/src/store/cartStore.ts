@@ -22,7 +22,7 @@ export const useCartStore = create<CartState>()(
         (set, get) => ({
             items: [],
             generalDescription: '',
-            
+
             updateQuantity: (id, newQuantity) => set(state => {
                 if (newQuantity < 1) return state;
                 return {
@@ -31,7 +31,7 @@ export const useCartStore = create<CartState>()(
                     )
                 };
             }),
-            
+
             addToCart: (item) => set((state) => {
                 if (state.items.some(existingItem => existingItem.id === item.id)) {
                     return state;
@@ -45,19 +45,19 @@ export const useCartStore = create<CartState>()(
                     description: item.description,
                     clientDescription: ''
                 };
-            
+
                 return {
                     items: [...state.items, newItem]
                 };
             }),
-            
+
             removeFromCart: (id) => set((state) => ({
                 items: state.items.filter(item => item.id !== id),
             })),
-            
+
             toggleCartItem: (item) => set((state) => {
                 const isItemInCart = state.items.some(existingItem => existingItem.id === item.id);
-                
+
                 if (isItemInCart) {
                     return {
                         items: state.items.filter(cartItem => cartItem.id !== item.id),
@@ -76,13 +76,13 @@ export const useCartStore = create<CartState>()(
                     };
                 }
             }),
-            
+
             updatePaymentType: (id, type) => set((state) => ({
                 items: state.items.map(item =>
                     item.id === id ? { ...item, paymentType: type, hours: type === 'hourly' ? (item.hours || 1) : undefined } : item
                 )
             })),
-            
+
             updateHours: (id, hours) => set((state) => {
                 if (hours < 1) return state;
                 return {
@@ -91,20 +91,20 @@ export const useCartStore = create<CartState>()(
                     )
                 };
             }),
-            
+
             updateClientDescription: (id, description) => set((state) => ({
                 items: state.items.map(item =>
                     item.id === id ? { ...item, clientDescription: description } : item
                 )
             })),
-            
-            updateGeneralDescription: (description) => set(() => ({ 
-                generalDescription: description 
+
+            updateGeneralDescription: (description) => set(() => ({
+                generalDescription: description
             })),
-            
-            clearCart: () => set(() => ({ 
-                items: [], 
-                generalDescription: '' 
+
+            clearCart: () => set(() => ({
+                items: [],
+                generalDescription: ''
             })),
 
             getTotalPrice: () => {
@@ -112,6 +112,11 @@ export const useCartStore = create<CartState>()(
                 return state.items.reduce((total, item) => {
                     if (item.paymentType === 'hourly' && item.hours && item.hourlyPrice) {
                         return total + item.hourlyPrice * item.hours;
+                    }
+                    console.log(item)
+                    console.log(total)
+                    if (item.totalPrice) {
+                        return total + (item.totalPrice || 0) * item.quantity;
                     }
                     return total + (item.price || 0) * item.quantity;
                 }, 0);

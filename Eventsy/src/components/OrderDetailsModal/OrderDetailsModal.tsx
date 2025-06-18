@@ -77,7 +77,6 @@ const OrderDetailsModal: FC<OrderDetailsModalProps> = ({ isOpen, onClose, order 
     }, [isOpen, order]);
 
     if (!isOpen) return null;
-
     const categories = [
         { key: 'venues', label: 'Локації' },
         { key: 'food', label: 'Їжа' },
@@ -86,11 +85,14 @@ const OrderDetailsModal: FC<OrderDetailsModalProps> = ({ isOpen, onClose, order 
         { key: 'music', label: 'Музика' },
         { key: 'beverages', label: 'Напої' },
         { key: 'photographers', label: 'Фотографи' },
-    ].filter(cat => order[cat.key as keyof IOrder] && order[cat.key as keyof IOrder]!.length > 0);
+    ].filter(cat => {
+        const value = order[cat.key as keyof IOrder];
+        return Array.isArray(value) && value.length > 0;
+    });
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-black-30 rounded-xl p-6 max-w-5xl w-full max-h-[95vh] overflow-hidden flex flex-col">
+        <div className="fixed inset-0 bg-black-30 bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-black rounded-xl p-6 max-w-5xl w-full max-h-[95vh] overflow-hidden flex flex-col">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-semibold">Деталі замовлення #{order._id.slice(-6)}</h2>
                     <button
@@ -114,13 +116,13 @@ const OrderDetailsModal: FC<OrderDetailsModalProps> = ({ isOpen, onClose, order 
                         </div>
                         <div>
                             <p className="text-muted">Статус</p>
-                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                order.status === 'pending' ? 'bg-yellow-500 text-yellow-900' :
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${order.status === 'pending' ? 'bg-yellow-500 text-yellow-900' :
                                 order.status === 'confirmed' ? 'bg-green-500 text-green-900' :
-                                order.status === 'rejected' ? 'bg-red-500 text-red-900' :
-                                'bg-gray-500 text-gray-900'
-                            }`}>
-                                {order.status}
+                                    order.status === 'rejected' ? 'bg-red-500 text-red-900' :
+                                        'bg-gray-500 text-gray-900'
+                                }`}>
+                                {order.status === 'pending' && 'Очікується підтвердження'}
+
                             </span>
                         </div>
                         <div>
@@ -144,14 +146,17 @@ const OrderDetailsModal: FC<OrderDetailsModalProps> = ({ isOpen, onClose, order 
                             {categories.map(cat => (
                                 <button
                                     key={cat.key}
-                                    className={`px-4 py-2 rounded-lg text-left ${activeCategory === cat.key ? 'bg-primary text-black' : 'bg-black-40 text-muted hover:bg-black-50'}`}
+                                    className={`px-4 py-2 rounded-lg text-left transition-colors ${activeCategory === cat.key
+                                        ? 'bg-primary text-coral'
+                                        : 'bg-black-40 text-muted hover:bg-black-50'
+                                        }`}
                                     onClick={() => setActiveCategory(cat.key as any)}
                                 >
-                                    {/* {cat.label} ({order[cat.key as keyof IOrder]!.length}) */}
+                                    {cat.label}
                                 </button>
                             ))}
                         </div>
-
+                        <div>asajskas</div>
                         {/* Вміст обраної категорії */}
                         <div className="flex-1 pl-4 overflow-y-auto">
                             {activeCategory && (

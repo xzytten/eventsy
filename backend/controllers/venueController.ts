@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { Venue } from '../models/Venue';
 
-// Створення нового місця
+
 export const createVenue = async (req: Request, res: Response) => {
   try {
     console.log(req.body)
@@ -13,7 +13,7 @@ export const createVenue = async (req: Request, res: Response) => {
   }
 };
 
-// Отримання всіх місць
+
 export const getAllVenues = async (req: Request, res: Response) => {
   try {
     const venues = await Venue.find({ isActive: true });
@@ -23,7 +23,7 @@ export const getAllVenues = async (req: Request, res: Response) => {
   }
 };
 
-// Отримання місця за ID
+
 export const getVenueById = async (req: Request, res: Response) => {
   try {
     const venue = await Venue.findById(req.params.id);
@@ -36,7 +36,7 @@ export const getVenueById = async (req: Request, res: Response) => {
   }
 };
 
-// Оновлення місця
+
 export const updateVenue = async (req: Request, res: Response) => {
   try {
     const venue = await Venue.findByIdAndUpdate(
@@ -53,7 +53,7 @@ export const updateVenue = async (req: Request, res: Response) => {
   }
 };
 
-// Видалення місця (soft delete)
+
 export const deleteVenue = async (req: Request, res: Response) => {
   try {
     const venue = await Venue.findByIdAndUpdate(
@@ -70,7 +70,7 @@ export const deleteVenue = async (req: Request, res: Response) => {
   }
 };
 
-// Отримання місць за типом заходу
+
 export const getVenuesByEventType = async (req: Request, res: Response) => {
   try {
     const { eventType } = req.params;

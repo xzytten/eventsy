@@ -95,7 +95,6 @@ const PhotographerTabItem: FC<PhotographerItemComponentProps> = ({
     };
 
     const itemTitle = fullDetails?.name || item.title;
-    //   const imageUrl = fullDetails?.images?.[0] || item.image || '/placeholder-photographer.jpg';
 
     return (
         <motion.div

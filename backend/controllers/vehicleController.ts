@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { Vehicle } from '../models/Vehicle';
 
-// Створення нового транспортного засобу
+
 export const createVehicle = async (req: Request, res: Response) => {
   try {
     const vehicle = new Vehicle(req.body);
@@ -12,7 +12,7 @@ export const createVehicle = async (req: Request, res: Response) => {
   }
 };
 
-// Отримання всіх транспортних засобів
+
 export const getAllVehicles = async (req: Request, res: Response) => {
   try {
     const vehicles = await Vehicle.find();

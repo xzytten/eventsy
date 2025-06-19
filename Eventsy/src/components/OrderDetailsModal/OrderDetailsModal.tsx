@@ -1,5 +1,5 @@
 import { type FC, useState, useEffect } from 'react';
-import { X, Users, Camera, Car, Utensils, MapPin, CupSoda, Music, ChevronDown } from 'lucide-react';
+import { X, Users, Camera, Car, Utensils, MapPin, CupSoda, Music, ChevronDown, Menu } from 'lucide-react';
 import { type EventType } from '@/types/services';
 import { EVENT_TYPE_NAMES } from '@/constants/types';
 import { type IVenue } from '@/types/venue';
@@ -11,19 +11,15 @@ import { type IPhotographer } from '@/types/photographer';
 import { updateOrderStatus } from '@/services/cartService';
 import { toast } from 'react-hot-toast';
 import { useUserStore } from '@/store/userStore';
-// Import other service types if needed (Music, Beverage, Photographer)
 
-// Тип для окремого елемента послуги в замовленні (з populated serviceId)
 interface IOrderItem<T> {
     serviceId: T;
     clientDescription?: string;
     quantity?: number;
     hours?: number;
     paymentType?: 'full' | 'hourly';
-    // Додайте інші специфічні поля, якщо потрібно
 }
 
-// Тип для даних замовлення, що приходять з бекенду (з populated services)
 interface IOrder {
     _id: string;
     eventType: EventType;
@@ -37,8 +33,8 @@ interface IOrder {
     food?: IOrderItem<IFood>[];
     animators?: IOrderItem<IAnimator>[];
     vehicles?: IOrderItem<IVehicle>[];
-    // Додайте інші категорії замовлень тут
-    music?: IOrderItem<any>[]; // Приклад, якщо є інші категорії без чіткого типу поки що
+
+    music?: IOrderItem<any>[];
     beverages?: IOrderItem<IBeverage>[];
     photographers?: IOrderItem<IPhotographer>[];
 }
@@ -50,34 +46,30 @@ interface OrderDetailsModalProps {
     onOrderUpdate?: (updatedOrder: IOrder) => void;
 }
 
-// Компонент для відображення картки послуги
+
 const ServiceCard: FC<{ item: IOrderItem<any>; type: string }> = ({ item, type }) => {
     const service = item.serviceId;
     if (!service) return null;
 
     const getPrice = () => {
-        // Якщо є quantity (їжа, напої, товари)
+
         if (typeof item.quantity === 'number' && item.quantity > 1) {
-            // Якщо є totalPrice (наприклад, ціна за одиницю)
+
             if (service.totalPrice) return service.totalPrice * item.quantity;
-            // fallback: якщо є price
+
             if (service.price) return service.price * item.quantity;
         }
 
-        // Якщо є hours (погодинні послуги)
+
         if (typeof item.hours === 'number' && item.hours > 0) {
-            // Якщо є pricePerHour
             if (service.pricePerHour) return service.pricePerHour * item.hours;
-            // fallback: якщо є totalPrice (наприклад, погодинна ціна)
             if (service.totalPrice) return service.totalPrice * item.hours;
         }
 
-        // Якщо є paymentType === 'full' або нічого з вище не підходить
         if (service.pricePerDay) return service.pricePerDay;
         if (service.totalPrice) return service.totalPrice;
         if (service.price) return service.price;
 
-        // fallback
         return 0;
     };
 
@@ -138,6 +130,7 @@ const ServiceCard: FC<{ item: IOrderItem<any>; type: string }> = ({ item, type }
 const OrderDetailsModal: FC<OrderDetailsModalProps> = ({ isOpen, onClose, order, onOrderUpdate }) => {
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+    const [openMenu, setOpenMenu] = useState(false);
     const { user } = useUserStore();
     const isAdmin = user?.role === 'admin';
 
@@ -165,22 +158,18 @@ const OrderDetailsModal: FC<OrderDetailsModalProps> = ({ isOpen, onClose, order,
 
     const handleStatusUpdate = async (newStatus: 'pending' | 'confirmed' | 'rejected' | 'closed') => {
         if (!isAdmin) return;
-        
-        // Update local state immediately
+
         const updatedOrder = { ...order, status: newStatus };
         if (onOrderUpdate) {
             onOrderUpdate(updatedOrder);
         }
-        
-        // Close dropdown
+
         setIsStatusDropdownOpen(false);
-        
-        // Send request to backend in background
+
         try {
             await updateOrderStatus(order._id, newStatus);
         } catch (error) {
             console.error('Error updating order status:', error);
-            // Revert local state on error
             if (onOrderUpdate) {
                 onOrderUpdate(order);
             }
@@ -192,10 +181,8 @@ const OrderDetailsModal: FC<OrderDetailsModalProps> = ({ isOpen, onClose, order,
         if (isOpen && activeCategory === null && categories.length > 0) {
             setActiveCategory(categories[0].key);
         }
-        // eslint-disable-next-line
     }, [isOpen, categories, activeCategory]);
 
-    // Close status dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             const target = event.target as Element;
@@ -230,7 +217,6 @@ const OrderDetailsModal: FC<OrderDetailsModalProps> = ({ isOpen, onClose, order,
                     </button>
                 </div>
 
-                {/* Основна інформація */}
                 <div className="bg-black-40 rounded-lg p-4 mb-6">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
@@ -297,11 +283,9 @@ const OrderDetailsModal: FC<OrderDetailsModalProps> = ({ isOpen, onClose, order,
                     )}
                 </div>
 
-                {/* Фільтри категорій та вміст */}
                 {categories.length > 0 ? (
                     <div className="flex flex-1 overflow-hidden gap-6">
-                        {/* Бічне меню категорій */}
-                        <div className="w-64 shrink-0">
+                        <div className="w-64 shrink-0 hidden lg:block">
                             <div className="bg-black-30 rounded-xl p-4 space-y-2">
                                 <h3 className="text-lg font-semibold mb-4">Послуги</h3>
                                 {categories.map(cat => (
@@ -322,8 +306,48 @@ const OrderDetailsModal: FC<OrderDetailsModalProps> = ({ isOpen, onClose, order,
                                 ))}
                             </div>
                         </div>
-
-                        {/* Основний контент */}
+                        <div className="lg:hidden flex flex-col">
+                            <button
+                                className="mb-4 text-white self-start"
+                                onClick={() => setOpenMenu(true)}
+                                aria-label="Відкрити меню категорій"
+                            >
+                                <Menu size={32} />
+                            </button>
+                            {openMenu && (
+                                <div className="fixed inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center z-50">
+                                    <button
+                                        className="absolute top-6 right-6 text-white"
+                                        onClick={() => setOpenMenu(false)}
+                                        aria-label="Закрити меню категорій"
+                                    >
+                                        <X size={36} />
+                                    </button>
+                                    <div className="w-11/12 max-w-xs bg-black-30 rounded-xl p-6 space-y-4">
+                                        <h3 className="text-lg font-semibold mb-4">Послуги</h3>
+                                        {categories.map(cat => (
+                                            <button
+                                                key={cat.key}
+                                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${activeCategory === cat.key
+                                                    ? 'bg-coral text-white'
+                                                    : 'bg-black-40 text-muted hover:bg-white/5'
+                                                }`}
+                                                onClick={() => {
+                                                    setActiveCategory(cat.key);
+                                                    setOpenMenu(false);
+                                                }}
+                                            >
+                                                {cat.icon}
+                                                <span>{cat.label}</span>
+                                                <span className="ml-auto text-sm">
+                                                    {(order[cat.key as keyof IOrder] as IOrderItem<any>[])?.length || 0}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                         <div className="flex-1 overflow-y-auto">
                             <div className="space-y-6">
                                 <h3 className="text-xl font-semibold">

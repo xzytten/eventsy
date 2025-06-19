@@ -58,7 +58,6 @@ export const BeverageList: FC<BeverageListProps> = ({
     setSelectedBeverageForDetails(null);
   };
 
-  // Фільтрація напоїв за вибраними критеріями
   const filteredBeverages = availableBeverages.filter((beverage: IBeverage) => {
     if (selectedEventTypes?.length > 0) {
       const hasMatchingEventType = beverage.eventTypes?.some((type) => 

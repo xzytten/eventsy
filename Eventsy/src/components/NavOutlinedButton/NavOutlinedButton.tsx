@@ -7,6 +7,7 @@ interface NavOutlinedButtonProps {
     children: React.ReactNode;
     icon?: React.ReactNode;
     className?: string;
+    onClick?: () => void;
 }
 
 const NavOutlinedButton: FC<NavOutlinedButtonProps> = ({
@@ -14,6 +15,7 @@ const NavOutlinedButton: FC<NavOutlinedButtonProps> = ({
     children,
     icon,
     className,
+    onClick,
 }) => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -27,7 +29,10 @@ const NavOutlinedButton: FC<NavOutlinedButtonProps> = ({
         <OutlinedButton
             icon={icon && <div className={textColor}>{icon}</div>}
             className={`transition-all ${isActive ? activeStyles : inactiveStyles} ${className ?? ''}`}
-            onClick={() => navigate(to)}
+            onClick={() => {
+                if (onClick) onClick();
+                navigate(to);
+            }}
         >
             <span className={textColor}>{children}</span>
         </OutlinedButton>

@@ -14,7 +14,6 @@ export const EVENT_TYPES = [
 
 export type EventType = typeof EVENT_TYPES[number];
 
-// Display names for UI (Ukrainian)
 export const EVENT_TYPE_NAMES: Record<EventType, string> = {
   WEDDING: 'Весілля',
   BIRTHDAY: 'День народження',

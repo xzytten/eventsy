@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { Photographer } from '../models/Photographer';
 
-// Create new photographer
+
 export const createPhotographer = async (req: Request, res: Response) => {
   try {
     const photographer = new Photographer(req.body);
@@ -12,7 +12,6 @@ export const createPhotographer = async (req: Request, res: Response) => {
   }
 };
 
-// Get all photographers
 export const getAllPhotographers = async (req: Request, res: Response) => {
   try {
     const photographers = await Photographer.find({ isActive: true });
@@ -22,7 +21,6 @@ export const getAllPhotographers = async (req: Request, res: Response) => {
   }
 };
 
-// Get photographer by ID
 export const getPhotographerById = async (req: Request, res: Response) => {
   try {
     const photographer = await Photographer.findById(req.params.id);
@@ -35,7 +33,7 @@ export const getPhotographerById = async (req: Request, res: Response) => {
   }
 };
 
-// Update photographer
+
 export const updatePhotographer = async (req: Request, res: Response) => {
   try {
     const photographer = await Photographer.findByIdAndUpdate(
@@ -52,7 +50,7 @@ export const updatePhotographer = async (req: Request, res: Response) => {
   }
 };
 
-// Delete photographer (soft delete)
+
 export const deletePhotographer = async (req: Request, res: Response) => {
   try {
     const photographer = await Photographer.findByIdAndUpdate(

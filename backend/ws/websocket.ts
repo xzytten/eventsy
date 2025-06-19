@@ -21,12 +21,11 @@ interface IncomingMessageWithUser extends IncomingMessage {
     user: WsAuthorizedUser
 }
 
-// Configuration defaults
 const DEFAULT_CONFIG: Required<Omit<ChatServerConfig, 'server'>> = {
     maxMessageLength: 1000,
     maxUsernameLength: 20,
-    heartbeatInterval: 30000, // 30 seconds
-    allowedOrigins: ['*'] // Allow all origins by default
+    heartbeatInterval: 30000,
+    allowedOrigins: ['*'] 
 };
 
 export class StandaloneWebSocketChatServer {
@@ -39,7 +38,6 @@ export class StandaloneWebSocketChatServer {
     constructor(config: ChatServerConfig) {
         this.config = { ...DEFAULT_CONFIG, ...config };
 
-        // Create HTTP server for WebSocket
         this.server = config.server;
 
         this.wss = new WebSocket.Server({server: this.server, verifyClient: this.verifyClient.bind(this)});
@@ -55,12 +53,9 @@ export class StandaloneWebSocketChatServer {
             const { origin } = info;
             console.log(`WebSocket connection attempt from origin: ${origin}`);
 
-            // Check allowed origins
             if (!this.config.allowedOrigins.includes('*') && !this.config.allowedOrigins.includes(origin)) {
                 return false;
             }
-
-            // Parse cookies from the request
             const cookies: Record<string, string> = {};
             const cookieHeader = info.req.headers.cookie;
 
@@ -114,7 +109,6 @@ export class StandaloneWebSocketChatServer {
 
             const savedUser = await User.findOne({ email });
 
-            // Initialize client data
             const clientData: ClientData = {
                 email: email,
                 ws: ws,
@@ -127,17 +121,14 @@ export class StandaloneWebSocketChatServer {
 
             this.clients.set(clientId, clientData);
 
-            // Set up client-specific handlers
             this.setupClientHandlers(ws, clientId);
 
-            // Send welcome message
             this.sendToClient(clientId, {
                 type: 'connection_established',
                 clientId: clientId,
                 timestamp: new Date().toISOString()
             });
 
-            // Start heartbeat
             this.startHeartbeat(clientId);
         });
 
@@ -153,7 +144,6 @@ export class StandaloneWebSocketChatServer {
 
         this.server.on('listening', () => {
             console.log(`WebSocket Chat Server running on address ${this.config.server.address()}`);
-            // console.log(`WebSocket URL: ws://localhost:${this.config.port}`);
         });
     }
 
@@ -232,10 +222,8 @@ export class StandaloneWebSocketChatServer {
     }
 
     private async getChatHistoryAndSendIt(chat: Document, clientId: string) {
-        // Load previous messages
         const previousMessages = await Message.find({chatId: chat._id}).sort({timestamp: 1});
 
-        // Send previous messages to user
         this.sendChatHistoryToClient(clientId, {
             messages: previousMessages.map(m => ({
                 type: 'message',
@@ -284,7 +272,6 @@ export class StandaloneWebSocketChatServer {
 
         const chat = client.role === 'admin' ? await Chat.findById(message.chatId) : await this.findOrCreateChat(client);
 
-        // Save message to DB
         const savedMessage = await Message.create({
             chatId: chat,
             sender: {
@@ -297,7 +284,6 @@ export class StandaloneWebSocketChatServer {
 
         const realClient = chat?.participants[0];
 
-        // Send message to all admins
         this.clients.forEach((c, id) => {
             if (c.role === 'admin' || c.email === realClient) {
                 this.sendToClient(id, {
@@ -318,7 +304,6 @@ export class StandaloneWebSocketChatServer {
         const username = client.username;
         console.log(`Client ${clientId} (${username}) leaving chat`);
 
-        // Broadcast user left message
         this.broadcast({
             type: 'user_left',
             username: username,
@@ -326,10 +311,8 @@ export class StandaloneWebSocketChatServer {
             timestamp: new Date().toISOString()
         }, clientId);
 
-        // Remove username but keep connection
         client.username = null;
 
-        // Update user count
         this.broadcastUserCount();
     }
 
@@ -363,7 +346,7 @@ export class StandaloneWebSocketChatServer {
         if (!client) return;
 
         if (client.username) {
-            // Broadcast user left message
+
             this.broadcast({
                 type: 'user_left',
                 username: client.username,
@@ -376,7 +359,6 @@ export class StandaloneWebSocketChatServer {
         this.broadcastUserCount();
     }
 
-    // Helper methods
     private generateClientId(): string {
         return `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
@@ -525,13 +507,11 @@ export class StandaloneWebSocketChatServer {
             if (currentClient.ws.readyState === WebSocket.OPEN) {
                 if (!currentClient.isAlive) {
                     console.log(`Client ${clientId} failed heartbeat, terminating`);
-                    // currentClient.ws.terminate();
                     clearInterval(heartbeatInterval);
                     return;
                 }
 
                 currentClient.isAlive = false;
-                // currentClient.ws.ping();
             } else {
                 clearInterval(heartbeatInterval);
             }
@@ -541,7 +521,7 @@ export class StandaloneWebSocketChatServer {
     private startStatsLogging(): void {
         this.statsInterval = setInterval(() => {
             this.logStats();
-        }, 5 * 60 * 1000); // 5 minutes
+        }, 5 * 60 * 1000); 
     }
 
     private setupGracefulShutdown(): void {
@@ -571,22 +551,18 @@ export class StandaloneWebSocketChatServer {
     public shutdown(): void {
         console.log('Shutting down WebSocket chat server...');
 
-        // Clear stats interval
         if (this.statsInterval) {
             clearInterval(this.statsInterval);
         }
 
-        // Close all client connections
         for (const [clientId, client] of this.clients) {
             client.ws.close(1001, 'Server shutting down');
         }
 
-        // Close WebSocket server
         this.wss.close(() => {
             console.log('WebSocket server closed');
         });
 
-        // Close HTTP server
         this.server.close(() => {
             console.log('HTTP server closed');
         });
@@ -594,7 +570,6 @@ export class StandaloneWebSocketChatServer {
         this.clients.clear();
     }
 
-    // Getters
     public get clientCount(): number {
         return this.clients.size;
     }
@@ -609,7 +584,6 @@ export class StandaloneWebSocketChatServer {
     }
 }
 
-// Factory function for easy setup
 export function createChatServer(config: ChatServerConfig): StandaloneWebSocketChatServer {
     return new StandaloneWebSocketChatServer(config);
 }

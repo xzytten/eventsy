@@ -48,7 +48,7 @@ const LoginPage: FC = () => {
         <div className='login-container flex w-full max-h-screen items-center justify-center'>
             <div className='max-w-300 w-full flex gap-12 items-center'>
                 <motion.div
-                    className='flex flex-col gap-5 max-w-150'
+                    className='login-text flex flex-col gap-5 max-w-150'
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, ease: 'easeOut' }}

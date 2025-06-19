@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { Animator } from '../models/Animator';
 
 export const animatorController = {
-  // Отримати всіх аніматорів
   getAll: async (req: Request, res: Response) => {
     try {
       const animators = await Animator.find({ isActive: true });
@@ -16,7 +15,6 @@ export const animatorController = {
     }
   },
 
-  // Отримати аніматора за ID
   getById: async (req: Request, res: Response) => {
     try {
       const animator = await Animator.findOne({ 
@@ -38,7 +36,6 @@ export const animatorController = {
     }
   },
 
-  // Створити нового аніматора
   create: async (req: Request, res: Response) => {
     try {
       const animator = new Animator({
@@ -59,7 +56,6 @@ export const animatorController = {
     }
   },
 
-  // Оновити аніматора
   update: async (req: Request, res: Response) => {
     try {
       const animator = await Animator.findOneAndUpdate(
@@ -88,7 +84,6 @@ export const animatorController = {
     }
   },
 
-  // Видалити аніматора (soft delete)
   delete: async (req: Request, res: Response) => {
     try {
       const animator = await Animator.findOneAndUpdate(
@@ -117,56 +112,3 @@ export const animatorController = {
     }
   }
 };
-
-// export const getAnimators = async (req: Request, res: Response) => {
-//     try {
-//         const animators = await Animator.find({ isActive: true });
-//         res.status(200).json(animators);
-//     } catch (error) {
-//         res.status(500).json({ message: 'Error fetching animators', error });
-//     }
-// };
-
-// export const getAnimatorById = async (req: Request, res: Response) => {
-//     try {
-//         const animator = await Animator.findById(req.params.id);
-//         if (!animator) {
-//             return res.status(404).json({ message: 'Animator not found' });
-//         }
-//         res.status(200).json(animator);
-//     } catch (error) {
-//         res.status(500).json({ message: 'Error fetching animator', error });
-//     }
-// };
-
-// export const updateAnimator = async (req: Request, res: Response) => {
-//     try {
-//         const animator = await Animator.findByIdAndUpdate(
-//             req.params.id,
-//             req.body,
-//             { new: true }
-//         );
-//         if (!animator) {
-//             return res.status(404).json({ message: 'Animator not found' });
-//         }
-//         res.status(200).json(animator);
-//     } catch (error) {
-//         res.status(400).json({ message: 'Error updating animator', error });
-//     }
-// };
-
-// export const deleteAnimator = async (req: Request, res: Response) => {
-//     try {
-//         const animator = await Animator.findByIdAndUpdate(
-//             req.params.id,
-//             { isActive: false },
-//             { new: true }
-//         );
-//         if (!animator) {
-//             return res.status(404).json({ message: 'Animator not found' });
-//         }
-//         res.status(200).json({ message: 'Animator deleted successfully' });
-//     } catch (error) {
-//         res.status(500).json({ message: 'Error deleting animator', error });
-//     }
-// }; 

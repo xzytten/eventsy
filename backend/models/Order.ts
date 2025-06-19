@@ -2,19 +2,19 @@ import mongoose, { Document, Schema } from 'mongoose';
 import { type EventType } from '../constants/types';
 
 export interface IServiceItem {
-  serviceId: mongoose.Types.ObjectId; // Reference to the specific service (Venue, Food, etc.)
-  clientDescription?: string; // Client-specific description for this service
-  quantity?: number; // Quantity (useful for food, etc.)
-  hours?: number; // Hours (useful for hourly services)
-  paymentType?: 'full' | 'hourly'; // Payment type for this service
+  serviceId: mongoose.Types.ObjectId;
+  clientDescription?: string; 
+  quantity?: number;
+  hours?: number; 
+  paymentType?: 'full' | 'hourly'; 
 }
 
 export interface IOrder extends Document {
-  user: mongoose.Types.ObjectId; // Reference to the User who placed the order
-  eventType: EventType; // Type of the event
-  eventDate: Date; // Date of the event
-  generalDescription?: string; // General description for the entire order
-  // Separate arrays for each service category
+  user: mongoose.Types.ObjectId;
+  eventType: EventType; 
+  eventDate: Date; 
+  generalDescription?: string;
+ 
   phoneNumber: string,
   venues?: Array<{
     serviceId: mongoose.Types.ObjectId;
@@ -57,10 +57,10 @@ export interface IOrder extends Document {
     clientDescription?: string;
     quantity?: number;
   }>;
-  // Add other categories as needed
-  createdAt: Date; // Date the order was created
-  totalPrice: number; // Total price of the order (can calculate on demand or store)
-  status: string; // Status of the order
+
+  createdAt: Date;
+  totalPrice: number; 
+  status: string;
 }
 
 const OrderSchema: Schema = new Schema({
@@ -68,7 +68,6 @@ const OrderSchema: Schema = new Schema({
   eventType: { type: String, required: true },
   eventDate: { type: Date, required: true },
   generalDescription: { type: String },
-  // Separate arrays for each service category
   venues: [{
     serviceId: { type: mongoose.Types.ObjectId, ref: 'Venue', required: true },
     clientDescription: { type: String },
@@ -110,7 +109,7 @@ const OrderSchema: Schema = new Schema({
     clientDescription: { type: String },
     quantity: { type: Number },
   }],
-  // Add other categories as needed
+
   createdAt: { type: Date, default: Date.now },
   totalPrice: { type: Number, required: true },
   phoneNumber: { type: String },

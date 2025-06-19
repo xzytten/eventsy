@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { Food } from '../models/Food';
 
-// Створення нової страви/меню
 export const createFood = async (req: Request, res: Response) => {
   try {
     const food = new Food(req.body);
@@ -12,7 +11,6 @@ export const createFood = async (req: Request, res: Response) => {
   }
 };
 
-// Отримання всіх страв/меню
 export const getAllFood = async (req: Request, res: Response) => {
   try {
     const food = await Food.find();

@@ -104,3 +104,18 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 } */
+
+@media (max-width: 1000px) {
+  .login-text {
+    display: none !important;
+  }
+  .register-text {
+    display: none !important;
+  }
+  .login-container > div {
+    gap: 0 !important;
+  }
+  .register-container {
+    gap: 0 !important;
+  }
+}

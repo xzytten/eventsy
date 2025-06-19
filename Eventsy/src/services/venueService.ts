@@ -4,13 +4,11 @@ import { API_URL } from '@/config';
 // const API_URL = '/api/venues'; // Переконайтеся, що цей URL відповідає маршруту бекенду
 
 export const venueService = {
-    // Отримати всі локації
     getAll: async (): Promise<IVenue[]> => {
         const response = await axios.get(`${API_URL}/venues`);
         return response.data;
     },
 
-    // Отримати локацію за ID
     getById: async (id: string): Promise<IVenue> => {
         const response = await axios.get(`${API_URL}/${id}`);
         return response.data;

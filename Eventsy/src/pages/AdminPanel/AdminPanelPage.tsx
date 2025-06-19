@@ -7,22 +7,22 @@ import { type EventType } from '@/types/services';
 import { EVENT_TYPE_NAMES } from '@/constants/types';
 import OrderDetailsModal from '@/components/OrderDetailsModal/OrderDetailsModal';
 
-// Тип для даних замовлення, що приходять з бекенду (з populated user та service details)
+
 interface IOrder {
     _id: string;
-    user: { // Populated user data
+    user: {
         _id: string;
         name: string;
         email: string;
     };
     eventType: EventType;
-    eventDate: string; // Will receive as string
+    eventDate: string; 
     generalDescription?: string;
     totalPrice: number;
     status: 'pending' | 'confirmed' | 'rejected' | 'closed';
-    createdAt: string; // Order creation date
-    // Include other populated service arrays if needed for display later
-    venues?: Array<any>; // Simplified for now, can be IOrderItem<IVenue>[]
+    createdAt: string; 
+
+    venues?: Array<any>;
     food?: Array<any>;
     animators?: Array<any>;
     vehicles?: Array<any>;
@@ -41,8 +41,7 @@ const AdminPanelPage: FC = () => {
     const [isLoadingOrderDetails, setIsLoadingOrderDetails] = useState(false);
 
     useEffect(() => {
-        // Only fetch orders if the user store is initialized
-        // ProtectedRoute ensures user is authenticated and admin, but we check isInitializing here
+
         if (!isInitializing) {
             const fetchOrders = async () => {
                 try {
@@ -52,7 +51,6 @@ const AdminPanelPage: FC = () => {
                     setOrders(data);
                 } catch (err) {
                     console.error('Failed to fetch all orders:', err);
-                    // Handle 403 Forbidden specifically if the user somehow bypasses ProtectedRoute (unlikely but good practice)
                     const errorMessage = err instanceof Error ? err.message : 'Не вдалося завантажити список замовлень';
                     setError(errorMessage);
                     toast.error(errorMessage);
@@ -62,9 +60,8 @@ const AdminPanelPage: FC = () => {
             };
             fetchOrders();
         }
-        // Note: Redirection for non-admin is handled by ProtectedRoute
 
-    }, [isInitializing, user]); // Depend on isInitializing and user (though user change here should not happen if ProtectedRoute works)
+    }, [isInitializing, user]); 
 
     const handleOrderClick = async (orderId: string) => {
         try {
@@ -86,26 +83,21 @@ const AdminPanelPage: FC = () => {
     };
 
     const handleOrderUpdate = (updatedOrder: any) => {
-        // Update the order in the local state
         setOrders(prevOrders => 
             prevOrders.map(order => 
                 order._id === updatedOrder._id ? updatedOrder : order
             )
         );
         
-        // Update the selected order if it's currently open
         if (selectedOrder && selectedOrder._id === updatedOrder._id) {
             setSelectedOrder(updatedOrder);
         }
     };
 
-    // We can show a simple loading state while ProtectedRoute determines access
     if (isInitializing) {
         return <div className="flex justify-center items-center min-h-screen text-white">Завантаження...</div>;
     }
 
-    // ProtectedRoute handles non-admin, so if we reach here, user is admin (or null if initial check fails)
-    // Display error if fetching orders failed
     if (error) {
         return (
             <div className="container mx-auto p-4 text-red-500 text-center">
@@ -115,7 +107,7 @@ const AdminPanelPage: FC = () => {
         );
     }
 
-    // Display loading state while orders are being fetched
+
     if (isLoadingOrders) {
         return <div className="flex justify-center items-center min-h-screen text-white">Завантаження списку замовлень...</div>;
     }
@@ -172,7 +164,6 @@ const AdminPanelPage: FC = () => {
                 </div>
             )}
 
-            {/* Order Details Modal */}
             {selectedOrder && (
                 <OrderDetailsModal
                     isOpen={isOrderModalOpen}
@@ -182,7 +173,6 @@ const AdminPanelPage: FC = () => {
                 />
             )}
 
-            {/* Loading overlay for order details */}
             {isLoadingOrderDetails && (
                 <div className="fixed inset-0 bg-black-30 bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-mainbg rounded-lg p-6">

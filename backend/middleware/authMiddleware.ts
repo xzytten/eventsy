@@ -1,30 +1,25 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { User } from '../models/User'; // Assuming your User model is here
-import { IUser } from '../types/user'; // Import IUser interface
+import { User } from '../models/User'; 
+import { IUser } from '../types/user';
 
-// Extend the Request interface to include user property with IUser type
 declare global {
     namespace Express {
         interface Request {
-            user?: IUser; // Use IUser type here
+            user?: IUser;
         }
     }
 }
 
 export const protect = async (req: Request, res: Response, next: NextFunction) => {
     let token;
-    //console.log(req.body) // Optional: keep or remove logging
-    //console.log(req.headers) // Optional: keep or remove logging
 
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         try {
             token = req.headers.authorization.split(' ')[1];
 
             const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string);
-            //console.log('Decoded JWT:', decoded) // Optional: keep or remove logging
 
-            // Fetch user from database - should include role
             const user = await User.findById(decoded.userId).select('-password');
 
             if (!user) {
@@ -33,7 +28,6 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
                 return;
             }
 
-            // Attach the fetched user document to the request object
             req.user = user;
             console.log('Auth middleware: Attached user to req.user:', req.user);
 

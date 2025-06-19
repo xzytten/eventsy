@@ -1,7 +1,6 @@
 import { useCallback, useRef, useState, useEffect } from 'react';
 import {useUserStore} from "@/store/userStore.ts";
 
-// Types
 export interface WebSocketMessage {
     type: string;
     username?: string;

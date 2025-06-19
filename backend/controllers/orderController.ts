@@ -4,23 +4,19 @@ import { User } from '../models/User';
 import mongoose from 'mongoose';
 import { NextFunction } from 'express';
 
-// Helper to validate ObjectId strings
 const isValidObjectId = (id: string): boolean => {
   return mongoose.Types.ObjectId.isValid(id);
 };
 
-// Helper to map incoming service data to IServiceItem schema, filtering invalid IDs first
 const mapToServiceItems = (items: any[] | undefined): IServiceItem[] => {
   if (!items || !Array.isArray(items)) {
     return [];
   }
 
-  // Filter items with valid string ObjectIds BEFORE mapping
   const validItems = items.filter(item => typeof item.serviceId === 'string' && isValidObjectId(item.serviceId as string));
 
-  // Now map the filtered items to the desired structure
   return validItems.map(item => ({
-    serviceId: new mongoose.Types.ObjectId(item.serviceId as string), // item.serviceId here is guaranteed to be a string
+    serviceId: new mongoose.Types.ObjectId(item.serviceId as string), 
     clientDescription: item.clientDescription,
     quantity: item.quantity,
     hours: item.hours,
@@ -78,7 +74,6 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
 
     const savedOrder = await newOrder.save();
 
-    // Add order ID to user's orders array
     await User.findByIdAndUpdate(
       userId,
       { $push: { orders: savedOrder._id } },
@@ -94,9 +89,6 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
-// @desc    Get user orders
-// @route   GET /api/orders/me
-// @access  Private
 export const getUserOrders = async (req: Request, res: Response): Promise<void> => {
   const userId = (req as any).user?._id;
 
@@ -106,7 +98,6 @@ export const getUserOrders = async (req: Request, res: Response): Promise<void> 
   }
 
   try {
-    // Get user and check if exists
     const user = await User.findById(userId);
     
     if (!user) {
@@ -114,16 +105,13 @@ export const getUserOrders = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    // Get orders array from user
     const orderIds = user.orders;
 
-    // If no orders, return empty array
     if (!orderIds || orderIds.length === 0) {
       res.status(200).json([]);
       return;
     }
 
-    // Get orders by IDs from user's orders array
     const orders = await Order.find({
       _id: { $in: orderIds }
     }).select('eventType eventDate generalDescription totalPrice status createdAt')
@@ -171,7 +159,6 @@ export const getOrderDetails = async (req: Request, res: Response) => {
     }
 };
 
-// @access  Private/Admin
 export const getOrderDetailsForAdmin = async (req: Request, res: Response) => {
     try {
         const orderId = req.params.id;
@@ -200,7 +187,6 @@ export const getOrderDetailsForAdmin = async (req: Request, res: Response) => {
     }
 };
 
-// @access  Private/Admin
 export const updateOrderStatus = async (req: Request, res: Response) => {
     try {
         const orderId = req.params.id;
@@ -208,7 +194,6 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
         
         console.log('Admin оновлення статусу замовлення:', { orderId, status });
 
-        // Validate status
         const validStatuses = ['pending', 'confirmed', 'rejected', 'closed'];
         if (!validStatuses.includes(status)) {
             res.status(400).json({ message: 'Invalid status. Must be one of: pending, confirmed, rejected, closed' });
@@ -235,7 +220,6 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
     }
 };
 
-// @access  Private/Admin
 export const getAllOrders = async (req: Request, res: Response): Promise<void> => {
     try {
         const orders = await Order.find({})

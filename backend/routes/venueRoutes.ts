@@ -8,9 +8,6 @@ venueRouter.post('/', (req, res, next) => {
     next();
 }, createVenue as RequestHandler);
 
-// router.get('/test', (req, res) => {
-//   res.send('✅ Venue test route is working');
-// });
 venueRouter.get('/', getAllVenues as RequestHandler);
 
 export default venueRouter; 

@@ -20,16 +20,13 @@ interface FoodState {
 const useFoodStore = create<FoodState>()(
   persist(
     (set, get) => ({
-      // Initial state
       food: [],
       isLoading: false,
       error: null,
       selectedFood: [],
 
-      // Actions
       loadFood: async () => {
         const { food, isLoading } = get();
-        // If already loading or data exists, do nothing
         if (isLoading || food.length > 0) {
             return;
         }
@@ -51,7 +48,6 @@ const useFoodStore = create<FoodState>()(
         console.log('Updating food description:', { foodId, description });
         
         set((state) => {
-          // Оновлюємо опис в selectedFood
           const updatedSelectedFood = state.selectedFood.map(food => {
             if (food._id === foodId) {
               const updatedFood = { ...food, clientDescription: description };
@@ -62,14 +58,11 @@ const useFoodStore = create<FoodState>()(
             return food;
           });
           
-          // Отримуємо поточний стан з localStorage
           const storedData = localStorage.getItem('food-storage');
           let storedState = storedData ? JSON.parse(storedData) : { state: { selectedFood: [] } };
 
-          // Оновлюємо clientDescription в збереженому стані
           storedState.state.selectedFood = updatedSelectedFood;
 
-          // Зберігаємо оновлений стан назад в localStorage
           localStorage.setItem('food-storage', JSON.stringify(storedState));
 
           return { 
@@ -87,14 +80,11 @@ const useFoodStore = create<FoodState>()(
             return food;
           });
 
-          // Отримуємо поточний стан з localStorage
           const storedData = localStorage.getItem('food-storage');
           let storedState = storedData ? JSON.parse(storedData) : { state: { selectedFood: [] } };
 
-          // Оновлюємо quantity в збереженому стані
           storedState.state.selectedFood = updatedSelectedFood;
 
-          // Зберігаємо оновлений стан назад в localStorage
           localStorage.setItem('food-storage', JSON.stringify(storedState));
 
           return { 
@@ -107,14 +97,11 @@ const useFoodStore = create<FoodState>()(
         set((state) => {
           const updatedSelectedFood = state.selectedFood.filter(food => food._id !== foodId);
 
-          // Отримуємо поточний стан з localStorage
           const storedData = localStorage.getItem('food-storage');
           let storedState = storedData ? JSON.parse(storedData) : { state: { selectedFood: [] } };
 
-          // Оновлюємо selectedFood в збереженому стані
           storedState.state.selectedFood = updatedSelectedFood;
 
-          // Зберігаємо оновлений стан назад в localStorage
           localStorage.setItem('food-storage', JSON.stringify(storedState));
 
           return { 
@@ -138,7 +125,6 @@ const useFoodStore = create<FoodState>()(
         if (isSelected) {
           newSelectedFood = selectedFood.filter(item => item._id !== foodId);
         } else {
-          // При додаванні нової їжі, зберігаємо її з поточним clientDescription
           const existingFood = selectedFood.find(item => item._id === foodId);
           newSelectedFood = [...selectedFood, {
             ...foodItem,

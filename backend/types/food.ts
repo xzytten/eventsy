@@ -5,11 +5,9 @@ export interface IFood {
   name: string;
   type: FoodType;
   description: string;
-  // Для окремих страв
   weight?: number;
   portion?: number;
   price?: number;
-  // Для наборів
   items?: Array<{
     name: string;
     quantity: number;

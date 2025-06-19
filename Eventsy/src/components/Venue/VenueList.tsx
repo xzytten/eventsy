@@ -60,17 +60,13 @@ export const VenueList: FC<VenueListProps> = ({
     setSelectedVenueForDetails(null);
   };
 
-  // Фільтрація локацій за вибраними критеріями
   const filteredVenues = availableVenues.filter((venue: IVenue) => {
-    // Фільтр за типом події
     if (selectedEventTypes?.length > 0) {
       const hasMatchingEventType = venue.eventTypes?.some((type) => 
         selectedEventTypes.includes(type as EventType) || type === 'ANY_EVENT'
       );
       if (!hasMatchingEventType) return false;
     }
-
-    // Фільтр за ціною
     if (priceRange) {
       const price = isHourly ? (venue.pricePerHour ?? 0) : (venue.pricePerDay ?? 0);
       if (price < priceRange.min || price > priceRange.max) {

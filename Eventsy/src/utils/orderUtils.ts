@@ -10,7 +10,6 @@ import { type EventType } from '@/constants/types';
 
 export const submitOrder = async (totalPrice: number, phoneNumber:string) => {
     try {
-        // Отримуємо дані зі сторів
         const serviceStore = useServiceStore.getState();
         const venueStore = useVenueStore.getState();
         const foodStore = useFoodStore.getState();
@@ -24,7 +23,6 @@ export const submitOrder = async (totalPrice: number, phoneNumber:string) => {
             throw new Error('Event type is required');
         }
 
-        // Підготовка даних замовлення
         const orderData = {
             eventType: eventType as EventType,
             eventDate: serviceStore.eventDate || new Date(localStorage.getItem('eventsy_event_date') || ''),
@@ -53,7 +51,7 @@ export const submitOrder = async (totalPrice: number, phoneNumber:string) => {
                 paymentType: vehicle.paymentType || undefined
             })),
             beverages: beverageStore.selectedBeverages.filter(beverage => beverage.name).map(beverage => ({
-                serviceId: beverage.name, // Для напоїв використовуємо name як serviceId
+                serviceId: beverage.name, 
                 clientDescription: ('clientDescription' in beverage && typeof beverage.clientDescription === 'string') ? beverage.clientDescription : undefined,
                 quantity: 'quantity' in beverage && typeof beverage.quantity === 'number' ? beverage.quantity : undefined
             })),
@@ -67,7 +65,6 @@ export const submitOrder = async (totalPrice: number, phoneNumber:string) => {
             phoneNumber: phoneNumber,
         };
         console.log(orderData)
-        // Відправка замовлення
         const result = await cartService.createOrder(orderData);
         return result;
     } catch (error) {
@@ -76,7 +73,6 @@ export const submitOrder = async (totalPrice: number, phoneNumber:string) => {
     }
 };
 
-// Допоміжна функція для розрахунку загальної ціни
 const calculateTotalPrice = (
     venue: any,
     food: any[],
@@ -85,26 +81,22 @@ const calculateTotalPrice = (
 ): number => {
     let total = 0;
 
-    // Додаємо ціну локації
     if (venue) {
         total += venue.paymentType === 'hourly' 
             ? venue.pricePerHour * (venue.hours || 1)
             : venue.pricePerDay;
     }
 
-    // Додаємо ціну їжі
     food.forEach(item => {
         total += item.price * (item.quantity || 1);
     });
 
-    // Додаємо ціну аніматорів
     animators.forEach(animator => {
         total += animator.paymentType === 'hourly'
             ? animator.pricePerHour * (animator.hours || 1)
             : animator.pricePerDay;
     });
 
-    // Додаємо ціну транспортних засобів
     vehicles.forEach(vehicle => {
         total += vehicle.paymentType === 'hourly'
             ? vehicle.pricePerHour * (vehicle.hours || 1)

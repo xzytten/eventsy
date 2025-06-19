@@ -2,27 +2,6 @@ import React, {useMemo, useState} from 'react';
 import Chat from "@/components/Chat/Chat.tsx";
 import {type ChatItem} from "@/hooks/Chat/useWebSocket.ts";
 
-// interface ChatInfo {
-//     userEmail: string;
-//     username: string;
-//     lastMessage: string;
-// }
-//
-// const dummyChats: ChatInfo[] = [
-//     {
-//         userEmail: 'john@example.com',
-//         username: 'John',
-//         lastMessage: 'Can you help me with my order?',
-//         timestamp: '2025-06-07T10:45:00Z',
-//     },
-//     {
-//         userEmail: 'jane@example.com',
-//         username: 'Jane',
-//         lastMessage: 'Thanks for the support!',
-//         timestamp: '2025-06-07T09:30:00Z',
-//     },
-// ];
-
 interface ChatProps {
     onClick: () => void;
     isSelected: boolean;

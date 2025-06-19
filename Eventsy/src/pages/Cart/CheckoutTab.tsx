@@ -48,7 +48,6 @@ const CheckoutTab: FC = () => {
             const fullPhoneNumber = `+380${phoneNumber}`;
             await submitOrder(totalPrice, fullPhoneNumber);
             
-            // Очищення localStorage
             localStorage.removeItem('active_step');
             localStorage.removeItem('animator-storage');
             localStorage.removeItem('eventsy_event_type');

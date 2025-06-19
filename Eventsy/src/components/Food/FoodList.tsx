@@ -58,9 +58,7 @@ export const FoodList: FC<FoodListProps> = ({
     setSelectedFoodForDetails(null);
   };
 
-  // Фільтрація їжі за вибраними критеріями
   const filteredFood = availableFood.filter((food: IFood) => {
-    // Фільтр за типом події
     if (selectedEventTypes?.length > 0) {
       const hasMatchingEventType = food.eventTypes?.some((type) => 
         selectedEventTypes.includes(type as EventType) || type === 'ANY_EVENT'
@@ -68,7 +66,6 @@ export const FoodList: FC<FoodListProps> = ({
       if (!hasMatchingEventType) return false;
     }
 
-    // Фільтр за ціною
     if (priceRange) {
       const price = food.price || food.totalPrice || 0;
       if (price < priceRange.min || price > priceRange.max) {

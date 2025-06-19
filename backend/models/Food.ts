@@ -10,11 +10,11 @@ const foodSchema = new mongoose.Schema({
     required: true 
   },
   description: { type: String, required: true },
-  // Для окремих страв
-  weight: { type: Number }, // вага в грамах
-  portion: { type: Number }, // кількість порцій
-  price: { type: Number }, // ціна за вагу/порцію
-  // Для наборів
+
+  weight: { type: Number },
+  portion: { type: Number },
+  price: { type: Number }, 
+
   items: [{
     name: { type: String },
     quantity: { type: Number },

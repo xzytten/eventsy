@@ -1,5 +1,5 @@
 import { type FC, useState } from 'react';
-import { Users, Camera, Car, MapPin, Utensils, CupSoda, Image } from 'lucide-react';
+import { Users, Camera, Car, MapPin, Utensils, CupSoda, Image, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnimatorList } from '@/components/Animator/AnimatorList';
 import { VenueList } from '@/components/Venue/VenueList';
@@ -15,6 +15,7 @@ const ServicesPage: FC = () => {
     const [priceRange, setPriceRange] = useState({ min: 0, max: 10000 });
     const [isHourly, setIsHourly] = useState(false);
     const [maxAvailablePrice, setMaxAvailablePrice] = useState(10000);
+    const [openMenu, setOpenMenu] = useState(false);
 
     const handleMaxPriceChange = (newMax: number) => {
         if (newMax !== maxAvailablePrice) {
@@ -41,7 +42,8 @@ const ServicesPage: FC = () => {
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="flex gap-8">
-                <div className="w-64 shrink-0 sticky top-4 h-fit flex flex-col gap-4">
+                {/* Desktop sidebar */}
+                <div className="w-64 shrink-0 sticky top-4 h-fit flex-col gap-4 hidden md:flex">
                     <motion.div
                         className="bg-black-30 rounded-xl p-4 space-y-2"
                         initial={{ opacity: 0, x: -50 }}
@@ -96,6 +98,58 @@ const ServicesPage: FC = () => {
                             maxAvailablePrice={maxAvailablePrice}
                         />
                     </motion.div>
+                </div>
+                {/* Mobile hamburger */}
+                <div className="md:hidden flex flex-col">
+                    <button
+                        className="mb-4 text-white self-start"
+                        onClick={() => setOpenMenu(true)}
+                        aria-label="Відкрити меню послуг"
+                    >
+                        <Menu size={32} />
+                    </button>
+                    {openMenu && (
+                        <div className="fixed inset-0 z-50 bg-black bg-opacity-80 flex flex-col items-center justify-center">
+                            <button
+                                className="absolute top-6 right-6 text-white"
+                                onClick={() => setOpenMenu(false)}
+                                aria-label="Закрити меню послуг"
+                            >
+                                <X size={36} />
+                            </button>
+                            <div className="w-11/12 max-w-xs bg-black-30 rounded-xl p-6 space-y-4">
+                                <div className="space-y-2 mb-4">
+                                    {categories.map(({ id, icon, label }, index) => (
+                                        <button
+                                            key={id}
+                                            onClick={() => {
+                                                setCurrentStep(index);
+                                                setOpenMenu(false);
+                                            }}
+                                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors cursor-pointer ${currentStep === index
+                                                ? 'bg-coral text-white'
+                                                : 'text-muted hover:bg-white/5'
+                                            }`}
+                                        >
+                                            {icon}
+                                            <span>{label}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                                <div className="bg-black-30 rounded-xl p-2">
+                                    <ServiceFilters
+                                        selectedEventTypes={selectedEventTypes}
+                                        onEventTypeChange={setSelectedEventTypes}
+                                        priceRange={priceRange}
+                                        onPriceRangeChange={handlePriceRangeChange}
+                                        isHourly={isHourly}
+                                        onHourlyChange={setIsHourly}
+                                        maxAvailablePrice={maxAvailablePrice}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
                 <div className="flex-1">
                     <AnimatePresence mode="wait">

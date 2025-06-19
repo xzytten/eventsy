@@ -20,14 +20,12 @@ console.log('DOTENV_CONFIG: Variables loaded:', Object.keys(process.env).length 
 
 const app = express();
 const server = http.createServer(app);
-// const wss = new WebSocket.Server({ server });
 
 const _PORT = process.env.PORT || 3003;
 const _DBURL = process.env.MONGODB_URI || 'mongodb+srv://xzyttenadminKAHSJ12:!eventsy2205Pass2025asjk12@cluster0.ui72r1l.mongodb.net/';
 
 app.use(cors());
 app.use(express.json());
-// app.use(cors());
 app.use('/api/auth', authRouter);
 app.use('/api/venues', venueRouter);
 app.use('/api/vehicle', vehicleRouter);
@@ -55,14 +53,6 @@ async function startWsServer(server: http.Server) {
         heartbeatInterval: 30000,
         allowedOrigins: ['http://localhost:3000', 'http://localhost:5173'] // Your frontend URLs
     });
-
-    // chatServer.start()
-    //     .then(() => {
-    //         console.log('Chat server started successfully!');
-    //     })
-    //     .catch((error) => {
-    //         console.error('Failed to start chat server:', error);
-    //     });
 
     return chatServer;
 }

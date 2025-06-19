@@ -107,7 +107,6 @@ const VenueTabItem: FC<CartItemComponentProps> = ({
  
     const itemTitle = fullDetails && 'name' in fullDetails ? fullDetails.name : item.title;
 
-    // Get current payment type and hours
     const currentPaymentType = currentVenue?.paymentType || (currentVenue?.pricePerHour ? 'hourly' : 'full');
     const currentHours = currentVenue?.hours || 1;
 

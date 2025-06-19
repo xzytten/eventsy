@@ -31,7 +31,6 @@ const Categories: FC<CategoriesProps> = ({
                     icon={icon}
                     label={label}
                     isActive={activeCategory === id}
-                    // count={categoryCounts[id]}
                     index={index}
                     onClick={onCategoryChange}
                 />

@@ -43,7 +43,6 @@ const Chat: React.FC<ChatProps> = ({onUpdateAdminChats, selectedChatId, searchTe
     const websocketUrl: string = 'ws://localhost:8087';
     const maxReconnectAttempts: number = 5;
 
-    // Get email from storage on component mount
     useEffect(() => {
         const email = user?.email;
         const name = user?.name;
@@ -73,11 +72,10 @@ const Chat: React.FC<ChatProps> = ({onUpdateAdminChats, selectedChatId, searchTe
         username,
         maxReconnectAttempts: 5,
         onMessage: (data) => {
-            // Custom message handler
+
             console.log('Received WebSocket message:', data);
         },
         onConnectionChange: (status: ConnectionStatus) => {
-            // Handle connection status changes
             console.log('Connection status changed:', status);
 
             if (status === 'connected') {

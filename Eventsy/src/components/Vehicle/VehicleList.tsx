@@ -60,9 +60,7 @@ export const VehicleList: FC<VehicleListProps> = ({
     setSelectedVehicleForDetails(null);
   };
 
-  // Фільтрація автомобілів за вибраними критеріями
   const filteredVehicles = availableVehicles.filter((vehicle: IVehicle) => {
-    // Фільтр за типом події
     if (selectedEventTypes?.length > 0) {
       const hasMatchingEventType = vehicle.eventTypes?.some((type) => 
         selectedEventTypes.includes(type as EventType) || type === 'ANY_EVENT'
@@ -70,7 +68,6 @@ export const VehicleList: FC<VehicleListProps> = ({
       if (!hasMatchingEventType) return false;
     }
 
-    // Фільтр за ціною
     if (priceRange) {
       const price = isHourly ? (vehicle.pricePerHour ?? 0) : (vehicle.pricePerDay ?? 0);
       if (price < priceRange.min || price > priceRange.max) {

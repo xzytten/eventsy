@@ -40,7 +40,6 @@ export default function CustomDatePicker({
   placeholder = 'Виберіть дату',
   className = '',
 }: CustomDatePickerProps) {
-  // Форматування дати для відображення (день місяць рік, місяць повністю)
   const formatted = value instanceof Date
     ? value.toLocaleDateString('uk-UA', {
         day: '2-digit',
